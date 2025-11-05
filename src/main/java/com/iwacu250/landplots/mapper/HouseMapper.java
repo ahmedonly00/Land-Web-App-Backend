@@ -74,7 +74,7 @@ public class HouseMapper {
         entity.setSize(dto.getSize());
         entity.setSizeUnit(dto.getSizeUnit());
         entity.setCurrency(dto.getCurrency());
-        entity.setType(dto.getType() != null ? dto.getType().name() : "HOUSE");
+        entity.setType(dto.getType() != null ? dto.getType() : PropertyType.HOUSE);
         entity.setStatus(dto.getStatus());
         entity.setYearBuilt(dto.getYearBuilt());
         entity.setFloors(dto.getFloors());

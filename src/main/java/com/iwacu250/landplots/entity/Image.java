@@ -36,6 +36,9 @@ public class Image {
     @Column(name = "is_featured")
     private Boolean isFeatured = false;
 
+    @Column(name = "alt_text", length = 500)
+    private String altText;
+    
     @CreatedDate
     @Column(nullable = false, updatable = false, name = "uploaded_at")
     private LocalDateTime uploadedAt;
