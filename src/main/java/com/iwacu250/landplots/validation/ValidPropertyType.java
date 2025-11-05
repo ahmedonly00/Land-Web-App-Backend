@@ -1,11 +1,12 @@
 package com.iwacu250.landplots.validation;
 
-import com.iwacu250.landplots.entity.PropertyType;
 import jakarta.validation.Constraint;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 import jakarta.validation.Payload;
 import java.lang.annotation.*;
+
+import com.iwacu250.landplots.model.PropertyType;
 
 @Documented
 @Constraint(validatedBy = ValidPropertyType.Validator.class)

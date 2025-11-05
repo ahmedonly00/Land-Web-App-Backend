@@ -1,7 +1,7 @@
 package com.iwacu250.landplots.controller;
 
 import com.iwacu250.landplots.dto.InquiryDTO;
-import com.iwacu250.landplots.entity.Inquiry;
+import com.iwacu250.landplots.model.Inquiry;
 import com.iwacu250.landplots.service.InquiryService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;

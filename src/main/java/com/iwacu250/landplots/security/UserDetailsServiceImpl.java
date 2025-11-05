@@ -1,6 +1,6 @@
 package com.iwacu250.landplots.security;
 
-import com.iwacu250.landplots.entity.User;
+import com.iwacu250.landplots.model.User;
 import com.iwacu250.landplots.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;

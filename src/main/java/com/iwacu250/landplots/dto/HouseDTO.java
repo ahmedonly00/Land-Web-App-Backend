@@ -1,8 +1,8 @@
 package com.iwacu250.landplots.dto;
 
-import com.iwacu250.landplots.entity.PropertyStatus;
-import com.iwacu250.landplots.entity.PropertyType;
 import com.iwacu250.landplots.validation.ValidPropertyType;
+import com.iwacu250.landplots.model.PropertyStatus;
+import com.iwacu250.landplots.model.PropertyType;
 import com.iwacu250.landplots.validation.ValidPropertyStatus;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;

@@ -1,8 +1,8 @@
 package com.iwacu250.landplots.service;
 
 import com.iwacu250.landplots.dto.InquiryDTO;
-import com.iwacu250.landplots.model.Inquiry;
-import com.iwacu250.landplots.model.Plot;
+import com.iwacu250.landplots.entity.Inquiry;
+import com.iwacu250.landplots.entity.Plot;
 import com.iwacu250.landplots.repository.InquiryRepository;
 import com.iwacu250.landplots.repository.PlotRepository;
 import org.springframework.beans.factory.annotation.Autowired;

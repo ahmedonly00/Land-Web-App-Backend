@@ -1,8 +1,9 @@
 package com.iwacu250.landplots.repository;
 
-import com.iwacu250.landplots.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
+
+import com.iwacu250.landplots.model.User;
 
 import java.util.Optional;
 

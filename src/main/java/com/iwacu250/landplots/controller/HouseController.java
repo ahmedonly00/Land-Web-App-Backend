@@ -1,8 +1,8 @@
 package com.iwacu250.landplots.controller;
 
 import com.iwacu250.landplots.dto.HouseDTO;
-import com.iwacu250.landplots.entity.PropertyStatus;
-import com.iwacu250.landplots.entity.PropertyType;
+import com.iwacu250.landplots.model.PropertyStatus;
+import com.iwacu250.landplots.model.PropertyType;
 import com.iwacu250.landplots.service.HouseService;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;

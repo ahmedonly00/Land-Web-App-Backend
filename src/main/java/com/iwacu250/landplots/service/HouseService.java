@@ -1,14 +1,13 @@
 package com.iwacu250.landplots.service;
 
 import com.iwacu250.landplots.dto.HouseDTO;
-import com.iwacu250.landplots.model.House;
-import com.iwacu250.landplots.model.HouseFeature;
-import com.iwacu250.landplots.model.PropertyStatus;
-import com.iwacu250.landplots.model.PropertyType;
+import com.iwacu250.landplots.entity.House;
+import com.iwacu250.landplots.entity.HouseFeature;
+import com.iwacu250.landplots.entity.PropertyStatus;
+import com.iwacu250.landplots.entity.PropertyType;
 import com.iwacu250.landplots.exception.ResourceNotFoundException;
 import com.iwacu250.landplots.repository.HouseFeatureRepository;
 import com.iwacu250.landplots.repository.HouseRepository;
-import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -26,15 +25,13 @@ public class HouseService {
 
     private final HouseRepository houseRepository;
     private final HouseFeatureRepository featureRepository;
-    private final ModelMapper modelMapper;
 
     @Autowired
     public HouseService(HouseRepository houseRepository, 
-                       HouseFeatureRepository featureRepository,
-                       ModelMapper modelMapper) {
+                       HouseFeatureRepository featureRepository) {
         this.houseRepository = houseRepository;
         this.featureRepository = featureRepository;
-        this.modelMapper = modelMapper;
+
     }
 
     public HouseDTO createHouse(HouseDTO houseDTO) {

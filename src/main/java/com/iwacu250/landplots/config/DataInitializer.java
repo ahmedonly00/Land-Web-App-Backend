@@ -1,6 +1,9 @@
 package com.iwacu250.landplots.config;
 
-import com.iwacu250.landplots.model.*;
+import com.iwacu250.landplots.entity.Feature;
+import com.iwacu250.landplots.entity.House;
+import com.iwacu250.landplots.entity.HouseImage;
+import com.iwacu250.landplots.entity.*;
 import com.iwacu250.landplots.repository.*;
 import com.iwacu250.landplots.service.SettingService;
 import org.slf4j.Logger;

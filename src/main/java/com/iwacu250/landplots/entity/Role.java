@@ -1,4 +1,4 @@
-package com.iwacu250.landplots.entity;
+package com.iwacu250.landplots.model;
 
 import jakarta.persistence.*;
 import lombok.Data;

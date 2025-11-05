@@ -1,7 +1,8 @@
 package com.iwacu250.landplots.security;
 
-import com.iwacu250.landplots.entity.User;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.iwacu250.landplots.model.User;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.springframework.security.core.GrantedAuthority;

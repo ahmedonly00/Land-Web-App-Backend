@@ -1,4 +1,4 @@
-package com.iwacu250.landplots.entity;
+package com.iwacu250.landplots.model;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -54,7 +54,7 @@ public class House {
     private Integer bedrooms;
 
     @Column(name = "bathrooms", precision = 3, scale = 1)
-    private Double bathrooms;
+    private Integer bathrooms;
 
     @Column(name = "year_built")
     private Integer yearBuilt;

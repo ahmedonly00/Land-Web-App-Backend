@@ -12,6 +12,6 @@ public interface HouseRepository extends JpaRepository<House, Long>, JpaSpecific
     List<House> findByStatus(String status);
     List<House> findByType(String type);
     List<House> findByLocationContainingIgnoreCase(String location);
-    List<House> findByPriceBetween(BigDecimal minPrice, BigDecimal maxPrice);
+    List<House> findByPriceBetween(Long minPrice, Long maxPrice);
     List<House> findByBedrooms(Integer bedrooms);
 }

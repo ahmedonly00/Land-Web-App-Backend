@@ -1,4 +1,4 @@
-package com.iwacu250.landplots.entity;
+package com.iwacu250.landplots.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
