@@ -1,7 +1,7 @@
 package com.iwacu250.landplots.security;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.iwacu250.landplots.model.User;
+import com.iwacu250.landplots.entity.User;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

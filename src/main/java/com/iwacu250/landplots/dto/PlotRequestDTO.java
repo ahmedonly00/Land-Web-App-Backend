@@ -7,7 +7,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-// BigDecimal replaced with Double
 import java.util.HashSet;
 import java.util.Set;
 

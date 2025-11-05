@@ -3,6 +3,7 @@ package com.iwacu250.landplots.service;
 import com.iwacu250.landplots.dto.InquiryDTO;
 import com.iwacu250.landplots.entity.Inquiry;
 import com.iwacu250.landplots.entity.Plot;
+import com.iwacu250.landplots.exception.ResourceNotFoundException;
 import com.iwacu250.landplots.repository.InquiryRepository;
 import com.iwacu250.landplots.repository.PlotRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,7 +33,9 @@ public class InquiryService {
         inquiry.setStatus("NEW");
 
         if (inquiryDTO.getPlotId() != null) {
-            Plot plot = plotRepository.findById(inquiryDTO.getPlotId()).orElse(null);
+            // Explicitly handle the case where plot might not be found
+            Plot plot = plotRepository.findById(inquiryDTO.getPlotId())
+                .orElseThrow(() -> new ResourceNotFoundException("Plot not found with id: " + inquiryDTO.getPlotId()));
             inquiry.setPlot(plot);
         }
 

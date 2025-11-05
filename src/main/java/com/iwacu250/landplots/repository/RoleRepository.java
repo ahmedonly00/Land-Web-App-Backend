@@ -3,8 +3,8 @@ package com.iwacu250.landplots.repository;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import com.iwacu250.landplots.model.ERole;
-import com.iwacu250.landplots.model.Role;
+import com.iwacu250.landplots.entity.ERole;
+import com.iwacu250.landplots.entity.Role;
 
 import java.util.Optional;
 

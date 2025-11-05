@@ -3,11 +3,10 @@ package com.iwacu250.landplots.service;
 import com.iwacu250.landplots.dto.AuthResponse;
 import com.iwacu250.landplots.dto.LoginRequest;
 import com.iwacu250.landplots.dto.RegisterRequest;
-import com.iwacu250.landplots.model.ERole;
-import com.iwacu250.landplots.model.Role;
-import com.iwacu250.landplots.model.User;
+import com.iwacu250.landplots.entity.ERole;
+import com.iwacu250.landplots.entity.Role;
+import com.iwacu250.landplots.entity.User;
 import com.iwacu250.landplots.exception.ResourceAlreadyExistsException;
-import com.iwacu250.landplots.exception.ResourceNotFoundException;
 import com.iwacu250.landplots.repository.RoleRepository;
 import com.iwacu250.landplots.repository.UserRepository;
 import com.iwacu250.landplots.security.JwtTokenProvider;
@@ -100,7 +99,7 @@ public class AuthService {
                 user.getId(),
                 user.getUsername(),
                 user.getEmail(),
-                DEFAULT_ROLE.replace("ROLE_", "")
+                DEFAULT_ROLE.name().replace("ROLE_", "")
         );
     }
 

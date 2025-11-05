@@ -6,6 +6,7 @@ import com.iwacu250.landplots.dto.PlotRequestDTO;
 import com.iwacu250.landplots.entity.Feature;
 import com.iwacu250.landplots.entity.Image;
 import com.iwacu250.landplots.entity.Plot;
+import com.iwacu250.landplots.entity.PropertyStatus;
 import com.iwacu250.landplots.exception.ResourceNotFoundException;
 import com.iwacu250.landplots.mapper.PlotMapper;
 import com.iwacu250.landplots.repository.FeatureRepository;
@@ -19,6 +20,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.lang.NonNull;
 
 import java.io.IOException;
 import java.util.List;
@@ -87,7 +89,12 @@ public class PlotService {
     }
 
     @Transactional
-    public void deletePlot(Long id) {
+    public void deletePlot(@org.springframework.lang.NonNull Long id) {
+        if (id == null) {
+            throw new IllegalArgumentException("Plot ID cannot be null");
+        }
+        
+        // Get the plot to delete its images
         Plot plot = plotRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Plot", "id", id));
         
@@ -104,9 +111,10 @@ public class PlotService {
     }
 
     @Transactional
-    public PlotDTO updatePlotStatus(Long id, String status) {
+    public PlotDTO updatePlotStatus(Long id, String statusStr) {
         Plot plot = plotRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Plot", "id", id));
+        PropertyStatus status = PropertyStatus.valueOf(statusStr);
         plot.setStatus(status);
         Plot updatedPlot = plotRepository.save(plot);
         return convertToDTO(updatedPlot);
@@ -152,8 +160,10 @@ public class PlotService {
 
     @Transactional
     public void reorderImages(Long plotId, List<Long> imageIds) {
-        Plot plot = plotRepository.findById(plotId)
-                .orElseThrow(() -> new ResourceNotFoundException("Plot", "id", plotId));
+        // Verify plot exists
+        if (!plotRepository.existsById(plotId)) {
+            throw new ResourceNotFoundException("Plot", "id", plotId);
+        }
 
         for (int i = 0; i < imageIds.size(); i++) {
             Long imageId = imageIds.get(i);

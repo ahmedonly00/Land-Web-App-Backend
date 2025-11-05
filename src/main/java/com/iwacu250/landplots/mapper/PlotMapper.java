@@ -6,6 +6,7 @@ import com.iwacu250.landplots.dto.PlotRequestDTO;
 import com.iwacu250.landplots.entity.Feature;
 import com.iwacu250.landplots.entity.Image;
 import com.iwacu250.landplots.entity.Plot;
+import com.iwacu250.landplots.entity.PropertyStatus;
 
 import java.util.List;
 import java.util.Set;
@@ -66,7 +67,7 @@ public class PlotMapper {
         plot.setPrice(dto.getPrice());
         plot.setCurrency(dto.getCurrency() != null ? dto.getCurrency() : "RWF");
         plot.setDescription(dto.getDescription());
-        plot.setStatus(dto.getStatus() != null ? dto.getStatus() : "AVAILABLE");
+        plot.setStatus(dto.getStatus() != null ? PropertyStatus.valueOf(dto.getStatus()) : PropertyStatus.AVAILABLE);
         plot.setVideoUrl(dto.getVideoUrl());
         plot.setLatitude(dto.getLatitude());
         plot.setLongitude(dto.getLongitude());

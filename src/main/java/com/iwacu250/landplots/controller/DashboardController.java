@@ -1,7 +1,7 @@
 package com.iwacu250.landplots.controller;
 
 import com.iwacu250.landplots.dto.DashboardStatsDTO;
-import com.iwacu250.landplots.model.Inquiry;
+import com.iwacu250.landplots.entity.Inquiry;
 import com.iwacu250.landplots.service.DashboardService;
 import com.iwacu250.landplots.service.InquiryService;
 import org.springframework.beans.factory.annotation.Autowired;

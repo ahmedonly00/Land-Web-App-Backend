@@ -6,7 +6,7 @@ import jakarta.validation.ConstraintValidatorContext;
 import jakarta.validation.Payload;
 import java.lang.annotation.*;
 
-import com.iwacu250.landplots.model.PropertyStatus;
+import com.iwacu250.landplots.entity.PropertyStatus;
 
 @Documented
 @Constraint(validatedBy = ValidPropertyStatus.Validator.class)

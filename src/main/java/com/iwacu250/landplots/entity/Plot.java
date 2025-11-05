@@ -1,4 +1,4 @@
-package com.iwacu250.landplots.model;
+package com.iwacu250.landplots.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -8,7 +8,6 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-// BigDecimal replaced with Double
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -33,13 +32,13 @@ public class Plot {
     @Column(nullable = false)
     private String location;
 
-    @Column(nullable = false, precision = 10, scale = 2)
+    @Column(nullable = false)
     private Double size;
 
     @Column(nullable = false, name = "size_unit", length = 20)
     private String sizeUnit;
 
-    @Column(nullable = false, precision = 15, scale = 2)
+    @Column(nullable = false)
     private Double price;
 
     @Column(length = 10)
@@ -48,8 +47,9 @@ public class Plot {
     @Column(columnDefinition = "TEXT")
     private String description;
 
+    @Enumerated(EnumType.STRING)
     @Column(length = 20)
-    private String status = "AVAILABLE";
+    private PropertyStatus status = PropertyStatus.AVAILABLE;
 
     @Column(name = "featured_image_url", length = 500)
     private String featuredImageUrl;
@@ -57,10 +57,10 @@ public class Plot {
     @Column(name = "video_url", length = 500)
     private String videoUrl;
 
-    @Column(precision = 10, scale = 8)
+    @Column
     private Double latitude;
 
-    @Column(precision = 11, scale = 8)
+    @Column
     private Double longitude;
 
     @OneToMany(mappedBy = "plot", cascade = CascadeType.ALL, orphanRemoval = true)

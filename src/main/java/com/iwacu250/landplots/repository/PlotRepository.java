@@ -8,7 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import com.iwacu250.landplots.model.Plot;
+import com.iwacu250.landplots.entity.Plot;
 
 // BigDecimal replaced with Double
 import java.util.List;

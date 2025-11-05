@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.lang.NonNull;
 
 
 @Service
@@ -31,11 +32,18 @@ public class HouseFeatureService {
         }
         
         HouseFeature feature = HouseFeatureMapper.toEntity(featureDTO);
+        if (feature == null) {
+            throw new IllegalArgumentException("Failed to map HouseFeatureDTO to entity");
+        }
         HouseFeature savedFeature = featureRepository.save(feature);
         return HouseFeatureMapper.toDto(savedFeature);
     }
 
     public HouseFeatureDTO updateFeature(Long id, HouseFeatureDTO featureDTO) {
+        if (id == null) {
+            throw new IllegalArgumentException("Feature ID cannot be null");
+        }
+        
         HouseFeature existingFeature = featureRepository.findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("Feature not found with id: " + id));
         
@@ -52,6 +60,10 @@ public class HouseFeatureService {
 
     @Transactional(readOnly = true)
     public HouseFeatureDTO getFeatureById(Long id) {
+        if (id == null) {
+            throw new IllegalArgumentException("Feature ID cannot be null");
+        }
+
         HouseFeature feature = featureRepository.findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("Feature not found with id: " + id));
         return HouseFeatureMapper.toDto(feature);
@@ -65,11 +77,12 @@ public class HouseFeatureService {
 
     @Transactional(readOnly = true)
     public Page<HouseFeatureDTO> searchFeatures(String query, Pageable pageable) {
-        return featureRepository.findByNameContainingIgnoreCase(query, pageable)
+        Pageable pageRequest = pageable != null ? pageable : Pageable.unpaged();
+        return featureRepository.findByNameContainingIgnoreCase(query, pageRequest)
             .map(HouseFeatureMapper::toDto);
     }
 
-    public void deleteFeature(Long id) {
+    public void deleteFeature(@NonNull Long id) {
         if (!featureRepository.existsById(id)) {
             throw new ResourceNotFoundException("Feature not found with id: " + id);
         }

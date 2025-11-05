@@ -1,4 +1,4 @@
-package com.iwacu250.landplots.model;
+package com.iwacu250.landplots.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -32,13 +32,13 @@ public class House {
     @Column(nullable = false)
     private String location;
 
-    @Column(nullable = false, precision = 10, scale = 2)
+    @Column(nullable = false)
     private Double size;
 
     @Column(nullable = false, name = "size_unit", length = 20)
     private String sizeUnit = "sqm";
 
-    @Column(nullable = false, precision = 15, scale = 2)
+    @Column(nullable = false)
     private Double price;
 
     @Column(length = 10)
@@ -47,13 +47,14 @@ public class House {
     @Column(columnDefinition = "TEXT")
     private String description;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
-    private String type = "HOUSE";
+    private PropertyType type = PropertyType.HOUSE;
 
     @Column(name = "bedrooms")
     private Integer bedrooms;
 
-    @Column(name = "bathrooms", precision = 3, scale = 1)
+    @Column(name = "bathrooms")
     private Integer bathrooms;
 
     @Column(name = "year_built")
@@ -62,8 +63,9 @@ public class House {
     @Column(name = "floors")
     private Integer floors;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "status", length = 20)
-    private String status = "AVAILABLE";
+    private PropertyStatus status = PropertyStatus.AVAILABLE;
 
     @Column(name = "featured_image_url", length = 500)
     private String featuredImageUrl;
@@ -71,10 +73,10 @@ public class House {
     @Column(name = "video_url", length = 500)
     private String videoUrl;
 
-    @Column(precision = 10, scale = 8)
+    @Column
     private Double latitude;
 
-    @Column(precision = 11, scale = 8)
+    @Column
     private Double longitude;
 
     @OneToMany(mappedBy = "house", cascade = CascadeType.ALL, orphanRemoval = true)

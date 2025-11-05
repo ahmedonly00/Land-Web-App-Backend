@@ -1,14 +1,13 @@
 package com.iwacu250.landplots.dto;
 
 import com.iwacu250.landplots.validation.ValidPropertyType;
-import com.iwacu250.landplots.model.PropertyStatus;
-import com.iwacu250.landplots.model.PropertyType;
+import com.iwacu250.landplots.entity.PropertyStatus;
+import com.iwacu250.landplots.entity.PropertyType;
 import com.iwacu250.landplots.validation.ValidPropertyStatus;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
 import lombok.Data;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
@@ -28,7 +27,7 @@ public class HouseDTO {
     @NotNull(message = "Size is required")
     @DecimalMin(value = "0.01", message = "Size must be greater than 0")
     @Digits(integer = 10, fraction = 2, message = "Size must have up to 10 digits before and 2 after decimal")
-    private BigDecimal size;
+    private Double size;
 
     @NotBlank(message = "Size unit is required")
     @Size(max = 20, message = "Size unit must be less than 20 characters")
@@ -37,7 +36,7 @@ public class HouseDTO {
     @NotNull(message = "Price is required")
     @DecimalMin(value = "0.0", inclusive = false, message = "Price must be greater than 0")
     @Digits(integer = 15, fraction = 2, message = "Price must have up to 15 digits before and 2 after decimal")
-    private BigDecimal price;
+    private Double price;
 
     @NotBlank(message = "Currency is required")
     @Size(min = 3, max = 3, message = "Currency must be a 3-letter code")
@@ -55,7 +54,7 @@ public class HouseDTO {
 
     @DecimalMin(value = "0.0", message = "Number of bathrooms must be 0 or more")
     @Digits(integer = 2, fraction = 1, message = "Bathrooms must have up to 2 digits before and 1 after decimal")
-    private BigDecimal bathrooms;
+    private Double bathrooms;
 
     @Min(value = 1800, message = "Year built must be 1800 or later")
     @Max(value = 2100, message = "Year built must be before 2100")
@@ -76,11 +75,11 @@ public class HouseDTO {
 
     @DecimalMin(value = "-90.0", message = "Latitude must be between -90 and 90")
     @DecimalMax(value = "90.0", message = "Latitude must be between -90 and 90")
-    private BigDecimal latitude;
+    private Double latitude;
 
     @DecimalMin(value = "-180.0", message = "Longitude must be between -180 and 180")
     @DecimalMax(value = "180.0", message = "Longitude must be between -180 and 180")
-    private BigDecimal longitude;
+    private Double longitude;
 
     @Valid
     private Set<HouseFeatureDTO> features = new HashSet<>();

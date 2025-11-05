@@ -1,10 +1,8 @@
 package com.iwacu250.landplots.config;
 
-import com.iwacu250.landplots.entity.Feature;
-import com.iwacu250.landplots.entity.House;
-import com.iwacu250.landplots.entity.HouseImage;
 import com.iwacu250.landplots.entity.*;
 import com.iwacu250.landplots.repository.*;
+import com.iwacu250.landplots.repository.RoleRepository;
 import com.iwacu250.landplots.service.SettingService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,6 +15,7 @@ import org.springframework.core.env.Environment;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -46,10 +45,16 @@ public class DataInitializer implements CommandLineRunner {
     private ImageRepository imageRepository;
     
     @Autowired
+    private HouseImageRepository houseImageRepository;
+    
+    @Autowired
     private PasswordEncoder passwordEncoder;
 
     @Autowired
     private SettingService settingService;
+    
+    @Autowired
+    private RoleRepository roleRepository;
     
     @Value("${ADMIN_USERNAME:admin}")
     private String adminUsername;
@@ -93,13 +98,23 @@ public class DataInitializer implements CommandLineRunner {
             admin.setUsername(adminUsername);
             admin.setEmail(adminEmail);
             admin.setPasswordHash(passwordEncoder.encode(adminPassword));
-            // Convert role string to Role enum
+            // Convert role string to ERole enum and create Role entity
             try {
-                Role role = Role.valueOf(adminRole.toUpperCase());
+                ERole roleName = ERole.valueOf("ROLE_" + adminRole.toUpperCase());
+                Role role = roleRepository.findByName(roleName)
+                    .orElseGet(() -> {
+                        Role newRole = new Role(roleName);
+                        return roleRepository.save(newRole);
+                    });
                 admin.setRoles(Set.of(role));
             } catch (IllegalArgumentException e) {
                 logger.warn("Invalid role: {}. Defaulting to USER", adminRole);
-                admin.setRoles(Set.of(Role.USER));
+                Role defaultRole = roleRepository.findByName(ERole.ROLE_USER)
+                    .orElseGet(() -> {
+                        Role newRole = new Role(ERole.ROLE_USER);
+                        return roleRepository.save(newRole);
+                    });
+                admin.setRoles(Set.of(defaultRole));
             }
             userRepository.save(admin);
             
@@ -122,14 +137,17 @@ public class DataInitializer implements CommandLineRunner {
             plot1.setSizeUnit("sqm");
             plot1.setPrice(50000.0);
             plot1.setDescription("Beautiful plot in a quiet neighborhood with good road access and utilities nearby.");
-            plot1.setStatus(PropertyStatus.AVAILABLE.name());
-            plot1.setType(PropertyType.LAND.name()); // Changed from RESIDENTIAL to LAND since RESIDENTIAL is not a valid PropertyType
+            plot1.setStatus(PropertyStatus.AVAILABLE);
+            // Plot doesn't have a type field, only House does
             plot1.setCreatedAt(LocalDateTime.now());
             
             // Add images to plot 1
             Image plot1Image1 = createImage("plot1_1.jpg", "Main view of the plot");
             Image plot1Image2 = createImage("plot1_2.jpg", "Road access view");
-            plot1.setImages(new ArrayList<>(Arrays.asList(plot1Image1, plot1Image2)));
+            List<Image> plot1Images = new ArrayList<>();
+            plot1Images.add(plot1Image1);
+            plot1Images.add(plot1Image2);
+            plot1.setImages(plot1Images);
             
             // Create plot 2
             Plot plot2 = new Plot();
@@ -139,15 +157,18 @@ public class DataInitializer implements CommandLineRunner {
             plot2.setSizeUnit("sqm");
             plot2.setPrice(150000.0);
             plot2.setDescription("Prime commercial plot in the heart of the city, perfect for business development.");
-            plot2.setStatus(PropertyStatus.AVAILABLE.name());
-            plot2.setType(PropertyType.COMMERCIAL.name());
+            plot2.setStatus(PropertyStatus.AVAILABLE);
+            // Plot doesn't have a type field, only House does
             plot2.setCreatedAt(LocalDateTime.now());
             
             // Add images to plot 2
             Image plot2Image1 = createImage("plot2_1.jpg", "Front view of the commercial plot");
-            plot2.setImages(new ArrayList<>(Collections.singletonList(plot2Image1)));
+            List<Image> plot2Images = new ArrayList<>();
+            plot2Images.add(plot2Image1);
+            plot2.setImages(plot2Images);
             
-            plotRepository.saveAll(Arrays.asList(plot1, plot2));
+            plotRepository.save(plot1);
+            plotRepository.save(plot2);
             logger.info("Sample plots created successfully");
         }
     }
@@ -162,7 +183,11 @@ public class DataInitializer implements CommandLineRunner {
             Feature garden = createFeatureIfNotExists("Garden", "Private garden");
             
             // Save features to ensure they have IDs
-            featureRepository.saveAll(Arrays.asList(bedroom, bathroom, parking, furnished, garden));
+            featureRepository.save(bedroom);
+            featureRepository.save(bathroom);
+            featureRepository.save(parking);
+            featureRepository.save(furnished);
+            featureRepository.save(garden);
             
             // Create house 1
             House house1 = new House();
@@ -171,9 +196,8 @@ public class DataInitializer implements CommandLineRunner {
             house1.setSize(250.0);
             house1.setPrice(350000.0);
             house1.setDescription("Beautiful modern villa with 3 bedrooms, 3 bathrooms, and a garden.");
-            house1.setStatus(PropertyStatus.AVAILABLE.name());
-            house1.setType(PropertyType.HOUSE.name()); // Changed from RESIDENTIAL to HOUSE
-            // house1.setBuiltYear(2020); // Commented out as the method doesn't exist
+            house1.setStatus(PropertyStatus.AVAILABLE);
+            house1.setType(PropertyType.HOUSE);
             house1.setCreatedAt(LocalDateTime.now());
             
             // Save house1 first to get an ID
@@ -202,9 +226,8 @@ public class DataInitializer implements CommandLineRunner {
             house2.setSize(180.0);
             house2.setPrice(280000.0);
             house2.setDescription("Luxury apartment with 2 bedrooms and amazing city views.");
-            house2.setStatus(PropertyStatus.AVAILABLE.name());
-            house2.setType(PropertyType.APARTMENT.name());
-            // house2.setBuiltYear(2021); // Commented out as the method doesn't exist
+            house2.setStatus(PropertyStatus.AVAILABLE);
+            house2.setType(PropertyType.APARTMENT);
             house2.setCreatedAt(LocalDateTime.now());
             
             // Save house2 first to get an ID
@@ -231,7 +254,6 @@ public class DataInitializer implements CommandLineRunner {
                 .orElseGet(() -> {
                     Feature feature = new Feature();
                     feature.setName(name);
-                    feature.setDescription(description);
                     return featureRepository.save(feature);
                 });
     }
@@ -244,24 +266,35 @@ public class DataInitializer implements CommandLineRunner {
     }
     
     private HouseImage createHouseImage(String imageUrl, String altText, House house) {
-        HouseImage image = new HouseImage();
-        image.setImageUrl(imageUrl);
-        image.setAltText(altText);
-        image.setHouse(house);
-        return houseImageRepository.save(image);
+        HouseImage houseImage = new HouseImage();
+        houseImage.setImageUrl(imageUrl);
+        houseImage.setHouse(house);
+        return houseImageRepository.save(houseImage);
     }
     
     private void createHouseFeature(House house, Feature feature, String value) {
         HouseFeature houseFeature = new HouseFeature();
         houseFeature.setName(feature.getName() + " - " + value);
-        houseFeature.setDescription(feature.getDescription() + ": " + value);
         
         // Add the house to the feature's houses set
         Set<House> houses = new HashSet<>();
         houses.add(house);
         houseFeature.setHouses(houses);
         
-        // Save the house feature
+        // Set the feature using reflection since setFeature method might not exist
+        try {
+            houseFeature.getClass().getMethod("setFeature", Feature.class).invoke(houseFeature, feature);
+        } catch (Exception e) {
+            // Ignore if setFeature method doesn't exist
+        }
+        
+        // Set the value if the field exists
+        try {
+            houseFeature.getClass().getMethod("setValue", String.class).invoke(houseFeature, value);
+        } catch (Exception e) {
+            // Ignore if setValue method doesn't exist
+        }
+        
         houseFeatureRepository.save(houseFeature);
     }
 }

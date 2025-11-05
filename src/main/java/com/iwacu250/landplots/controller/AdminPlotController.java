@@ -12,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.lang.NonNull;
 
 import java.io.IOException;
 // BigDecimal replaced with Double
@@ -62,7 +63,7 @@ public class AdminPlotController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deletePlot(@PathVariable Long id) {
+    public ResponseEntity<?> deletePlot(@PathVariable @NonNull Long id) {
         plotService.deletePlot(id);
         Map<String, String> response = new HashMap<>();
         response.put("message", "Plot deleted successfully");
