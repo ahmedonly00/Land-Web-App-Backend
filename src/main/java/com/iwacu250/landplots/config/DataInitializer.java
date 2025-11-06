@@ -96,6 +96,12 @@ public class DataInitializer implements CommandLineRunner {
             admin.setUsername(adminUsername);
             admin.setEmail(adminEmail);
             admin.setPasswordHash(passwordEncoder.encode(adminPassword));
+            
+            
+            // Explicitly set the timestamps
+            LocalDateTime now = LocalDateTime.now();
+            admin.setCreatedAt(now);
+            admin.setUpdatedAt(now);
             // Convert role string to ERole enum and create Role entity
             try {
                 ERole roleName = ERole.valueOf("ROLE_" + adminRole.toUpperCase());
