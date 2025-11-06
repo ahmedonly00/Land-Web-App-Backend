@@ -4,7 +4,6 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
@@ -27,12 +26,21 @@ public class Setting {
     @Column(nullable = false, name = "setting_value", columnDefinition = "TEXT")
     private String settingValue;
 
-    @LastModifiedDate
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
     public Setting(String settingKey, String settingValue) {
         this.settingKey = settingKey;
         this.settingValue = settingValue;
+    }
+
+    @PrePersist
+    protected void onCreate() {
+        updatedAt = LocalDateTime.now();
+    }
+    
+    @PreUpdate
+    protected void onUpdate() {
+        updatedAt = LocalDateTime.now();
     }
 }

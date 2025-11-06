@@ -5,7 +5,6 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
@@ -39,7 +38,11 @@ public class Image {
     @Column(name = "alt_text", length = 500)
     private String altText;
     
-    @CreatedDate
     @Column(nullable = false, updatable = false, name = "uploaded_at")
     private LocalDateTime uploadedAt;
+
+    @PrePersist
+    protected void onCreate() {
+        uploadedAt = LocalDateTime.now();
+    }
 }
