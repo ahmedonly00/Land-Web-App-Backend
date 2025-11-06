@@ -89,10 +89,7 @@ public class PlotService {
     }
 
     @Transactional
-    public void deletePlot(@org.springframework.lang.NonNull Long id) {
-        if (id == null) {
-            throw new IllegalArgumentException("Plot ID cannot be null");
-        }
+    public void deletePlot(@NonNull Long id) {
         
         // Get the plot to delete its images
         Plot plot = plotRepository.findById(id)

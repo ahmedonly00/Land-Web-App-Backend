@@ -11,12 +11,10 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import org.springframework.core.env.Environment;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.HashSet;
@@ -183,11 +181,11 @@ public class DataInitializer implements CommandLineRunner {
             Feature garden = createFeatureIfNotExists("Garden", "Private garden");
             
             // Save features to ensure they have IDs
-            featureRepository.save(bedroom);
-            featureRepository.save(bathroom);
-            featureRepository.save(parking);
-            featureRepository.save(furnished);
-            featureRepository.save(garden);
+            if (bedroom != null) featureRepository.save(bedroom);
+            if (bathroom != null) featureRepository.save(bathroom);
+            if (parking != null) featureRepository.save(parking);
+            if (furnished != null) featureRepository.save(furnished);
+            if (garden != null) featureRepository.save(garden);
             
             // Create house 1
             House house1 = new House();
@@ -244,7 +242,14 @@ public class DataInitializer implements CommandLineRunner {
             HouseImage house2Image2 = createHouseImage("house2_2.jpg", "Living area", house2);
             house2.setImages(new ArrayList<>(Arrays.asList(house2Image1, house2Image2)));
             
-            houseRepository.saveAll(Arrays.asList(house1, house2));
+            // Create a list of non-null houses to save
+            List<House> housesToSave = new ArrayList<>();
+            if (house1 != null) housesToSave.add(house1);
+            if (house2 != null) housesToSave.add(house2);
+            
+            if (!housesToSave.isEmpty()) {
+                houseRepository.saveAll(housesToSave);
+            }
             logger.info("Sample houses created successfully");
         }
     }

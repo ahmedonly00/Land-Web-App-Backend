@@ -2,6 +2,9 @@ package com.iwacu250.landplots.security;
 
 import com.iwacu250.landplots.entity.User;
 import com.iwacu250.landplots.repository.UserRepository;
+
+import jakarta.annotation.Nonnull;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -25,7 +28,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     }
 
     @Transactional
-    public UserDetails loadUserById(@NonNull Long id) {
+    public UserDetails loadUserById(@Nonnull Long id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found with id: " + id));
 

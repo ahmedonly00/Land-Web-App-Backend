@@ -17,9 +17,7 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import java.time.LocalDateTime;
-import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 @RestControllerAdvice
@@ -87,8 +85,12 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     public ResponseEntity<ApiResponse<Void>> handleMethodArgumentTypeMismatch(
             MethodArgumentTypeMismatchException ex, WebRequest request) {
-        String error = ex.getName() + " should be of type " + 
-                (ex.getRequiredType() != null ? ex.getRequiredType().getSimpleName() : "unknown");
+        String typeName = "unknown";
+        Class<?> requiredType = ex.getRequiredType();
+        if (requiredType != null) {
+            typeName = requiredType.getSimpleName();
+        }
+        String error = ex.getName() + " should be of type " + typeName;
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
                 .body(ApiResponse.error(error, HttpStatus.BAD_REQUEST.value()));

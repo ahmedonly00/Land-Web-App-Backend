@@ -3,7 +3,6 @@ package com.iwacu250.landplots.mapper;
 import com.iwacu250.landplots.dto.HouseDTO;
 import com.iwacu250.landplots.entity.House;
 import com.iwacu250.landplots.entity.HouseImage;
-import com.iwacu250.landplots.entity.PropertyStatus;
 import com.iwacu250.landplots.entity.PropertyType;
 
 import java.util.stream.Collectors;
