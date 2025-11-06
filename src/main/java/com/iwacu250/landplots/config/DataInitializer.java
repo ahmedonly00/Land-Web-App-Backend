@@ -11,6 +11,7 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -67,6 +68,7 @@ public class DataInitializer implements CommandLineRunner {
     private String adminRole;
 
     @Override
+    @Transactional
     public void run(String... args) throws Exception {
         // Create default admin user if not exists
         if (userRepository.count() == 0) {
@@ -81,6 +83,7 @@ public class DataInitializer implements CommandLineRunner {
         logger.info("Application initialized successfully");
     }
     
+    @Transactional
     private void createAdminUser() {
         try {
             if (adminUsername == null || adminEmail == null || adminPassword == null || adminRole == null) {
@@ -110,7 +113,10 @@ public class DataInitializer implements CommandLineRunner {
                         Role newRole = new Role(roleName);
                         return roleRepository.save(newRole);
                     });
-                admin.setRoles(Set.of(role));
+                // Create a new set to avoid modifying the existing one
+                Set<Role> roles = new HashSet<>();
+                roles.add(role);
+                admin.setRoles(roles);
             } catch (IllegalArgumentException e) {
                 logger.warn("Invalid role: {}. Defaulting to USER", adminRole);
                 Role defaultRole = roleRepository.findByName(ERole.ROLE_USER)
@@ -118,7 +124,10 @@ public class DataInitializer implements CommandLineRunner {
                         Role newRole = new Role(ERole.ROLE_USER);
                         return roleRepository.save(newRole);
                     });
-                admin.setRoles(Set.of(defaultRole));
+                // Create a new set to avoid modifying the existing one
+                Set<Role> defaultRoles = new HashSet<>();
+                defaultRoles.add(defaultRole);
+                admin.setRoles(defaultRoles);
             }
             userRepository.save(admin);
             
