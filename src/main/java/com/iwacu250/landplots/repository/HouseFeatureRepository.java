@@ -8,6 +8,7 @@ import org.springframework.stereotype.Repository;
 import com.iwacu250.landplots.entity.HouseFeature;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface HouseFeatureRepository extends JpaRepository<HouseFeature, Long> {
@@ -18,4 +19,6 @@ public interface HouseFeatureRepository extends JpaRepository<HouseFeature, Long
     Page<HouseFeature> findByNameContainingIgnoreCase(String name, Pageable pageable);
     
     boolean existsByName(String name);
+    
+    Optional<HouseFeature> findByName(String name);
 }

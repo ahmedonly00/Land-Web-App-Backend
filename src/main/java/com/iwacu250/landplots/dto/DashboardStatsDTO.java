@@ -8,10 +8,19 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class DashboardStatsDTO {
+    // Plot statistics
     private Long totalPlots;
     private Long availablePlots;
     private Long soldPlots;
     private Long reservedPlots;
+    
+    // House statistics
+    private Long totalHouses;
+    private Long availableHouses;
+    private Long soldHouses;
+    private Long reservedHouses;
+    
+    // Inquiry statistics
     private Long totalInquiries;
     private Long newInquiries;
 }

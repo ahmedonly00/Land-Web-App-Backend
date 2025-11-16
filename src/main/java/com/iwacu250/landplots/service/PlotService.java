@@ -20,14 +20,19 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.lang.NonNull;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
 public class PlotService {
+
+    private static final Logger logger = LoggerFactory.getLogger(PlotService.class);
 
     @Autowired
     private PlotRepository plotRepository;
@@ -44,14 +49,28 @@ public class PlotService {
     // ModelMapper has been replaced with manual mapping in PlotMapper
 
     @Transactional(readOnly = true)
-    public Page<PlotDTO> getAllPlots(int page, int size, String sortBy, String sortDir,
-                                      String status, String location, Double minPrice,
+    public Page<PlotDTO> getAllPlots(int page, int size, String sortBy, String direction,
+                                      String statusParam, String location, Double minPrice,
                                       Double maxPrice, Double minSize, Double maxSize) {
-        Sort sort = sortDir.equalsIgnoreCase("asc") 
+        // Convert status string to enum
+        PropertyStatus status = null;
+        if (statusParam != null && !statusParam.isEmpty()) {
+            try {
+                status = PropertyStatus.valueOf(statusParam.toUpperCase());
+            } catch (IllegalArgumentException e) {
+                // If the status is invalid, treat it as null (no status filter)
+                status = null;
+            }
+        }
+        
+        // Create sort object
+        Sort sort = direction.equalsIgnoreCase("asc") 
                 ? Sort.by(sortBy).ascending() 
                 : Sort.by(sortBy).descending();
+                
         Pageable pageable = PageRequest.of(page, size, sort);
 
+        // Search plots with the given filters
         Page<Plot> plots = plotRepository.searchPlots(status, location, minPrice, maxPrice, minSize, maxSize, pageable);
         return plots.map(this::convertToDTO);
     }
@@ -90,20 +109,16 @@ public class PlotService {
 
     @Transactional
     public void deletePlot(@NonNull Long id) {
-        
         // Get the plot to delete its images
         Plot plot = plotRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Plot", "id", id));
         
-        // Delete all images from cloud storage
+        // Delete all associated images
         for (Image image : plot.getImages()) {
-            try {
-                fileStorageService.deleteFile(image.getImageUrl());
-            } catch (IOException e) {
-                System.err.println("Failed to delete image file: " + image.getImageUrl() + ", Error: " + e.getMessage());
-            }
+            deleteImage(image.getId());
         }
         
+        // Delete the plot
         plotRepository.delete(plot);
     }
 
@@ -119,26 +134,60 @@ public class PlotService {
 
     @Transactional
     public ImageDTO uploadImage(Long plotId, MultipartFile file, Integer displayOrder, Boolean isFeatured) throws IOException {
-        Plot plot = plotRepository.findById(plotId)
-                .orElseThrow(() -> new ResourceNotFoundException("Plot", "id", plotId));
+        try {
+            System.out.println("PlotService: Starting image upload for plot ID: " + plotId);
+            System.out.println("PlotService: File name: " + file.getOriginalFilename());
+            System.out.println("PlotService: File size: " + file.getSize());
+            System.out.println("PlotService: Content type: " + file.getContentType());
+            
+            if (file == null || file.isEmpty()) {
+                throw new IllegalArgumentException("File cannot be null or empty");
+            }
 
-        String imageUrl = fileStorageService.uploadFile(file);
+            Plot plot = plotRepository.findById(plotId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Plot", "id", plotId));
+            
+            System.out.println("PlotService: Found plot: " + plot.getTitle());
 
-        Image image = new Image();
-        image.setPlot(plot);
-        image.setImageUrl(imageUrl);
-        image.setDisplayOrder(displayOrder != null ? displayOrder : plot.getImages().size());
-        image.setIsFeatured(isFeatured != null ? isFeatured : false);
+            // Upload the file to the configured storage
+            var uploadResponse = fileStorageService.uploadFile(file, "plots");
+            System.out.println("PlotService: File uploaded successfully: " + uploadResponse.getUrl());
 
-        Image savedImage = imageRepository.save(image);
+            // Create and save the image entity
+            Image image = new Image();
+            image.setPlot(plot);
+            image.setImageUrl(uploadResponse.getUrl());
+            image.setCloudinaryPublicId(uploadResponse.getPublicId());
+            image.setContentType(uploadResponse.getContentType());
+            image.setFileSize(file.getSize());
+            image.setUploadedAt(LocalDateTime.now()); // Set uploadedAt timestamp
+            
+            // Safely get display order
+            int displayOrderValue = 0;
+            if (displayOrder != null) {
+                displayOrderValue = displayOrder;
+            } else if (plot.getImages() != null) {
+                displayOrderValue = plot.getImages().size();
+            }
+            image.setDisplayOrder(displayOrderValue);
+            image.setIsFeatured(Boolean.TRUE.equals(isFeatured));
+            
+            System.out.println("PlotService: Saving image entity...");
+            Image savedImage = imageRepository.save(image);
+            System.out.println("PlotService: Image saved with ID: " + savedImage.getId());
 
-        // Update featured image if this is marked as featured
-        if (Boolean.TRUE.equals(isFeatured)) {
-            plot.setFeaturedImageUrl(imageUrl);
-            plotRepository.save(plot);
+            // Update featured image if this is marked as featured
+            if (Boolean.TRUE.equals(isFeatured)) {
+                plot.setFeaturedImageUrl(uploadResponse.getUrl());
+                plotRepository.save(plot);
+            }
+
+            return convertImageToDTO(savedImage);
+        } catch (Exception e) {
+            System.err.println("PlotService: Error uploading image: " + e.getMessage());
+            e.printStackTrace();
+            throw e;
         }
-
-        return convertImageToDTO(savedImage);
     }
 
     @Transactional
@@ -146,12 +195,25 @@ public class PlotService {
         Image image = imageRepository.findById(imageId)
                 .orElseThrow(() -> new ResourceNotFoundException("Image", "id", imageId));
         
-        try {
-            fileStorageService.deleteFile(image.getImageUrl());
-        } catch (IOException e) {
-            System.err.println("Failed to delete image file: " + image.getImageUrl() + ", Error: " + e.getMessage());
+        // Delete the file from storage
+        boolean deleted = fileStorageService.deleteFile(
+            image.getCloudinaryPublicId() != null ? 
+            image.getCloudinaryPublicId() : 
+            image.getImageUrl()
+        );
+        
+        if (!deleted) {
+            logger.warn("Failed to delete file for image ID: {}", imageId);
         }
         
+        // Remove from any plot's featured image reference if needed
+        if (image.getPlot().getFeaturedImageUrl() != null && 
+            image.getPlot().getFeaturedImageUrl().equals(image.getImageUrl())) {
+            image.getPlot().setFeaturedImageUrl(null);
+            plotRepository.save(image.getPlot());
+        }
+        
+        // Delete the image entity
         imageRepository.delete(image);
     }
 
@@ -196,5 +258,23 @@ public class PlotService {
     // Kept for backward compatibility with existing code
     private ImageDTO convertImageToDTO(Image image) {
         return PlotMapper.toImageDto(image);
+    }
+
+    public String uploadVideo(Long plotId, MultipartFile file) throws IOException {
+        if (file == null || file.isEmpty()) {
+            throw new IllegalArgumentException("File cannot be null or empty");
+        }
+
+        Plot plot = plotRepository.findById(plotId)
+                .orElseThrow(() -> new ResourceNotFoundException("Plot", "id", plotId));
+
+        // Upload the video file to the configured storage
+        var uploadResponse = fileStorageService.uploadFile(file, "plots/videos");
+
+        // Update plot with video URL
+        plot.setVideoUrl(uploadResponse.getUrl());
+        plotRepository.save(plot);
+
+        return uploadResponse.getUrl();
     }
 }

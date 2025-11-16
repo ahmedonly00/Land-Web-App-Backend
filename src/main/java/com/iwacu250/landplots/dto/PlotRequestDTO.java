@@ -40,9 +40,5 @@ public class PlotRequestDTO {
 
     private String videoUrl;
 
-    private Double latitude;
-
-    private Double longitude;
-
     private Set<String> features = new HashSet<>();
 }

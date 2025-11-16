@@ -7,13 +7,11 @@ import com.iwacu250.landplots.service.InquiryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/admin/dashboard")
-@CrossOrigin(origins = "*", maxAge = 3600)
-@PreAuthorize("hasRole('ADMIN')")
+@CrossOrigin(origins = "*")
 public class DashboardController {
 
     @Autowired
@@ -22,13 +20,13 @@ public class DashboardController {
     @Autowired
     private InquiryService inquiryService;
 
-    @GetMapping("/stats")
+    @GetMapping(value = "/stats")
     public ResponseEntity<DashboardStatsDTO> getDashboardStats() {
         DashboardStatsDTO stats = dashboardService.getDashboardStats();
         return ResponseEntity.ok(stats);
     }
 
-    @GetMapping("/inquiries")
+    @GetMapping(value = "/inquiries")
     public ResponseEntity<Page<Inquiry>> getInquiries(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,

@@ -9,15 +9,15 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import com.iwacu250.landplots.entity.Role;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
-/**
- * Implementation of UserDetails that contains user information which will be
- * encapsulated into Authentication objects.
- */
+
 @Data
 @AllArgsConstructor
 public class UserDetailsImpl implements UserDetails {
@@ -30,15 +30,22 @@ public class UserDetailsImpl implements UserDetails {
     private String password;
     private Collection<? extends GrantedAuthority> authorities;
 
-    /**
-     * Builds a UserDetailsImpl object from a User entity.
-     * 
-     * @param user the user entity
-     * @return a UserDetailsImpl instance
-     */
     public static UserDetailsImpl build(User user) {
-        List<GrantedAuthority> authorities = user.getRoles().stream()
-                .map(role -> new SimpleGrantedAuthority(role.getName().name()))
+        if (user == null) {
+            throw new IllegalArgumentException("User cannot be null");
+        }
+        
+        // Ensure roles are loaded
+        Set<Role> roles = user.getRoles();
+        if (roles == null) {
+            roles = new HashSet<>();
+        }
+        
+        List<GrantedAuthority> authorities = roles.stream()
+                .filter(Objects::nonNull)
+                .map(Role::getName)
+                .filter(Objects::nonNull)
+                .map(role -> new SimpleGrantedAuthority(role.name()))
                 .collect(Collectors.toList());
 
         return new UserDetailsImpl(

@@ -71,22 +71,78 @@ public class House {
     @Column(name = "video_url", length = 500)
     private String videoUrl;
 
-    @Column
-    private Double latitude;
-
-    @Column
-    private Double longitude;
-
     @OneToMany(mappedBy = "house", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<HouseImage> images = new ArrayList<>();
 
-    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
-    @JoinTable(
-        name = "house_features",
-        joinColumns = @JoinColumn(name = "house_id"),
-        inverseJoinColumns = @JoinColumn(name = "feature_id")
-    )
-    private Set<HouseFeature> features = new HashSet<>();
+    @OneToMany(mappedBy = "house", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<HouseFeatureJoin> houseFeatures = new HashSet<>();
+    
+    // Helper methods for images
+    public void addImage(HouseImage image) {
+        if (!images.contains(image)) {
+            images.add(image);
+            image.setHouse(this);
+        }
+    }
+
+    public void removeImage(HouseImage image) {
+        if (images.remove(image)) {
+            image.setHouse(null);
+        }
+    }
+    
+    // Helper methods for features
+    public void addFeature(HouseFeature feature) {
+        if (houseFeatures == null) {
+            houseFeatures = new HashSet<>();
+        }
+        
+        // Check if this feature is already associated
+        boolean exists = houseFeatures.stream()
+            .anyMatch(j -> j.getFeature() != null && j.getFeature().getId() != null && 
+                         j.getFeature().getId().equals(feature.getId()));
+        
+        if (!exists) {
+            HouseFeatureJoin join = new HouseFeatureJoin();
+            join.setHouse(this);
+            join.setFeature(feature);
+            join.setName(feature.getName());
+            join.setDescription(feature.getDescription());
+            join.setIcon(feature.getIcon());
+            houseFeatures.add(join);
+        }
+    }
+    
+    public void removeFeature(HouseFeature feature) {
+        if (houseFeatures != null) {
+            houseFeatures.removeIf(j -> j.getFeature() != null && 
+                                     j.getFeature().getId() != null && 
+                                     j.getFeature().getId().equals(feature.getId()));
+        }
+    }
+
+    public void addFeatureJoin(HouseFeatureJoin join) {
+        if (this.houseFeatures == null) {
+            this.houseFeatures = new HashSet<>();
+        }
+        if (join != null) {
+            join.setHouse(this);
+            this.houseFeatures.add(join);
+        }
+    }
+    
+    @Transient
+    public Set<HouseFeature> getFeatures() {
+        Set<HouseFeature> features = new HashSet<>();
+        if (houseFeatures != null) {
+            for (HouseFeatureJoin join : houseFeatures) {
+                if (join.getFeature() != null) {
+                    features.add(join.getFeature());
+                }
+            }
+        }
+        return features;
+    }
 
     @Column(nullable = false, updatable = false, name = "created_at")
     private LocalDateTime createdAt;
@@ -105,24 +161,18 @@ public class House {
         updatedAt = LocalDateTime.now();
     }
 
-    // Helper methods
-    public void addImage(HouseImage image) {
-        images.add(image);
-        image.setHouse(this);
+    // No duplicate methods here - they've been moved up
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        House house = (House) o;
+        return id != null && id.equals(house.id);
     }
 
-    public void removeImage(HouseImage image) {
-        images.remove(image);
-        image.setHouse(null);
-    }
-
-    public void addFeature(HouseFeature feature) {
-        features.add(feature);
-        feature.getHouses().add(this);
-    }
-
-    public void removeFeature(HouseFeature feature) {
-        features.remove(feature);
-        feature.getHouses().remove(this);
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
     }
 }

@@ -15,6 +15,7 @@ import java.math.BigDecimal;
 
 @RestController
 @RequestMapping("/api/houses")
+@CrossOrigin(origins = "*")
 public class HouseController extends BaseController {
 
     private final HouseService houseService;
@@ -23,13 +24,13 @@ public class HouseController extends BaseController {
         this.houseService = houseService;
     }
 
-    @PostMapping
+    @PostMapping(value = "/createHouse")
     public ResponseEntity<HouseDTO> createHouse(@Valid @RequestBody HouseDTO houseDTO) {
         HouseDTO createdHouse = houseService.createHouse(houseDTO);
         return created(createdHouse);
     }
 
-    @PutMapping("/{id}")
+    @PutMapping(value = "/updateHouse/{id}")
     public ResponseEntity<HouseDTO> updateHouse(
             @PathVariable Long id,
             @Valid @RequestBody HouseDTO houseDTO) {
@@ -38,13 +39,13 @@ public class HouseController extends BaseController {
         return ok(updatedHouse);
     }
 
-    @GetMapping("/{id}")
+    @GetMapping(value = "/getHouseById/{id}")
     public ResponseEntity<HouseDTO> getHouse(@PathVariable Long id) {
         HouseDTO house = houseService.getHouseById(id);
         return ok(house);
     }
 
-    @GetMapping
+    @GetMapping(value = "/getAllHouses")
     public ResponseEntity<Page<HouseDTO>> getAllHouses(
             @PageableDefault(size = 10) Pageable pageable,
             @RequestParam(required = false) String location,
@@ -64,13 +65,13 @@ public class HouseController extends BaseController {
         return ok(houseService.getAllHouses(pageable));
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping(value = "/deleteHouse/{id}")
     public ResponseEntity<Void> deleteHouse(@PathVariable Long id) {
         houseService.deleteHouse(id);
         return noContent();
     }
 
-    @GetMapping("/search")
+    @GetMapping(value = "/searchHouses")
     public ResponseEntity<Page<HouseDTO>> searchHouses(
             @RequestParam(required = false) String location,
             @RequestParam(required = false) BigDecimal minPrice,

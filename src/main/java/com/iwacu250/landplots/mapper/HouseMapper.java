@@ -4,6 +4,7 @@ import com.iwacu250.landplots.dto.HouseDTO;
 import com.iwacu250.landplots.entity.House;
 import com.iwacu250.landplots.entity.HouseImage;
 import com.iwacu250.landplots.entity.PropertyType;
+import com.iwacu250.landplots.entity.PropertyStatus;
 
 import java.util.stream.Collectors;
 
@@ -31,8 +32,6 @@ public class HouseMapper {
         dto.setFloors(entity.getFloors());
         dto.setFeaturedImageUrl(entity.getFeaturedImageUrl());
         dto.setVideoUrl(entity.getVideoUrl());
-        dto.setLatitude(entity.getLatitude());
-        dto.setLongitude(entity.getLongitude());
         dto.setCreatedAt(entity.getCreatedAt());
         dto.setUpdatedAt(entity.getUpdatedAt());
         
@@ -74,13 +73,11 @@ public class HouseMapper {
         entity.setSizeUnit(dto.getSizeUnit());
         entity.setCurrency(dto.getCurrency());
         entity.setType(dto.getType() != null ? dto.getType() : PropertyType.HOUSE);
-        entity.setStatus(dto.getStatus());
+        entity.setStatus(dto.getStatus() != null ? dto.getStatus() : PropertyStatus.AVAILABLE);
         entity.setYearBuilt(dto.getYearBuilt());
         entity.setFloors(dto.getFloors());
         entity.setFeaturedImageUrl(dto.getFeaturedImageUrl());
         entity.setVideoUrl(dto.getVideoUrl());
-        entity.setLatitude(dto.getLatitude());
-        entity.setLongitude(dto.getLongitude());
         
         // Features will be handled separately in the service layer
         
@@ -108,8 +105,6 @@ public class HouseMapper {
         if (dto.getFloors() != null) entity.setFloors(dto.getFloors());
         if (dto.getFeaturedImageUrl() != null) entity.setFeaturedImageUrl(dto.getFeaturedImageUrl());
         if (dto.getVideoUrl() != null) entity.setVideoUrl(dto.getVideoUrl());
-        if (dto.getLatitude() != null) entity.setLatitude(dto.getLatitude());
-        if (dto.getLongitude() != null) entity.setLongitude(dto.getLongitude());
         
         // Features will be handled separately in the service layer
     }

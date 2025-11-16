@@ -13,14 +13,14 @@ import java.util.HashMap;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/contact")
-@CrossOrigin(origins = "*", maxAge = 3600)
+@RequestMapping("/api/contacts")
+@CrossOrigin(origins = "*")
 public class ContactController {
 
     @Autowired
     private InquiryService inquiryService;
 
-    @PostMapping
+    @PostMapping(value = "/submitInquiry")
     public ResponseEntity<?> submitInquiry(@Valid @RequestBody InquiryDTO inquiryDTO) {
         Inquiry inquiry = inquiryService.createInquiry(inquiryDTO);
         Map<String, Object> response = new HashMap<>();

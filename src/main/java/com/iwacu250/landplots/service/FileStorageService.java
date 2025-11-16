@@ -1,117 +1,198 @@
 package com.iwacu250.landplots.service;
 
-import com.cloudinary.Cloudinary;
-import com.cloudinary.utils.ObjectUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.annotation.PostConstruct;
 import java.io.IOException;
-import java.util.Map;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
-import java.util.Collections;
-
+import java.util.Optional;
+import java.util.Map;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.stream.Collectors;
+import lombok.RequiredArgsConstructor;
+import lombok.Data;
+import java.time.LocalDateTime;
 
 @Service
+@RequiredArgsConstructor
 public class FileStorageService {
 
-    private static final Logger logger = LoggerFactory.getLogger(FileStorageService.class);
+    @Value("${file.upload-dir:uploads/}")
+    private String uploadDir;
+    
+    @Value("${file.allowed-image-types:jpg,jpeg,png,gif,webp}")
+    private String allowedImageTypes;
+    
+    @Value("${file.allowed-video-types:mp4,webm,ogg}")
+    private String allowedVideoTypes;
+    
+    private Set<String> allowedImageExtensions;
+    private Set<String> allowedVideoExtensions;
+    
+    public String storeImage(MultipartFile file) {
+        return storeFile(file, "image");
+    }
 
-    private final Cloudinary cloudinary;
-
-    public FileStorageService(
-            @Value("${cloudinary.cloud-name}") String cloudName,
-            @Value("${cloudinary.api-key}") String apiKey,
-            @Value("${cloudinary.api-secret}") String apiSecret) {
+    public String storeVideo(MultipartFile file) {
+        return storeFile(file, "video");
+    }
+    
+    public FileUploadResponse uploadFile(MultipartFile file, String folder) throws IOException {
+        String fileType = getFileType(file.getContentType());
+        String filePath = storeFile(file, fileType);
         
-        this.cloudinary = new Cloudinary(ObjectUtils.asMap(
-                "cloud_name", cloudName,
-                "api_key", apiKey,
-                "api_secret", apiSecret,
-                "secure", true
-        ));
+        FileUploadResponse response = new FileUploadResponse();
+        response.setUrl(filePath);
+        response.setPublicId(filePath); // In a real implementation, this would be the Cloudinary public ID
+        response.setContentType(file.getContentType());
+        response.setFileSize(file.getSize());
+        response.setUploadedAt(LocalDateTime.now());
+        
+        return response;
+    }
+    
+    @PostConstruct
+    public void init() {
+        // Initialize allowed file extensions
+        allowedImageExtensions = new HashSet<>(Arrays.asList(allowedImageTypes.toLowerCase().split(",")));
+        allowedVideoExtensions = new HashSet<>(Arrays.asList(allowedVideoTypes.toLowerCase().split(",")));
+        
+        // Create upload directory if it doesn't exist
+        try {
+            Files.createDirectories(Paths.get(uploadDir).toAbsolutePath().normalize());
+        } catch (IOException ex) {
+            throw new RuntimeException("Could not create upload directory", ex);
+        }
     }
 
-    public String uploadFile(MultipartFile file) throws IOException {
+    private String storeFile(MultipartFile file, String fileType) {
+        if (file == null || file.isEmpty()) {
+            throw new IllegalArgumentException("File cannot be empty");
+        }
+
         try {
+            // Validate file type
+            String originalFileName = StringUtils.cleanPath(file.getOriginalFilename());
+            String fileExtension = getFileExtension(originalFileName)
+                .orElseThrow(() -> new IllegalArgumentException("File must have an extension"));
+
+            if (fileType.equalsIgnoreCase("image") && !isValidImage(fileExtension)) {
+                throw new IllegalArgumentException("Invalid image type. Allowed types: " + allowedImageTypes);
+            } else if (fileType.equalsIgnoreCase("video") && !isValidVideo(fileExtension)) {
+                throw new IllegalArgumentException("Invalid video type. Allowed types: " + allowedVideoTypes);
+            }
+
+            // Create target directory
+            Path targetDir = Paths.get(uploadDir, fileType + "s").toAbsolutePath().normalize();
+            Files.createDirectories(targetDir);
+
             // Generate unique filename
-            String originalFilename = file.getOriginalFilename();
-            String fileExtension = originalFilename != null && originalFilename.contains(".") 
-                    ? originalFilename.substring(originalFilename.lastIndexOf("."))
-                    : "";
-            String uniqueFilename = "iwacu250_" + UUID.randomUUID().toString() + fileExtension;
+            String uniqueFileName = UUID.randomUUID().toString() + "." + fileExtension;
+            Path targetLocation = targetDir.resolve(uniqueFileName);
 
-            // Upload to Cloudinary
-            @SuppressWarnings("unchecked")
-            Map<String, Object> uploadResult = cloudinary.uploader().upload(file.getBytes(),
-                    ObjectUtils.asMap(
-                            "folder", "iwacu250/plots",
-                            "public_id", uniqueFilename,
-                            "resource_type", "auto",
-                            "transformation", ObjectUtils.asMap(
-                                    "width", 1200,
-                                    "height", 800,
-                                    "crop", "limit"
-                            )
-                    ));
+            // Save file
+            Files.copy(file.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
 
-            String imageUrl = (String) uploadResult.get("secure_url");
-            logger.info("File uploaded successfully: {}", imageUrl);
-            return imageUrl;
-
-        } catch (IOException e) {
-            logger.error("Failed to upload file to Cloudinary", e);
-            throw new IOException("Failed to upload file: " + e.getMessage());
+            return fileType + "s/" + uniqueFileName;
+        } catch (IOException ex) {
+            throw new RuntimeException("Failed to store file " + file.getOriginalFilename(), ex);
         }
     }
 
-    public void deleteFile(String imageUrl) throws IOException {
-        String publicId = extractPublicIdFromUrl(imageUrl);
-        if (publicId != null) {
-            try {
-                @SuppressWarnings("unchecked")
-                Map<String, Object> result = cloudinary.uploader().destroy(publicId, Collections.emptyMap());
-                logger.info("File deleted successfully: {}", result);
-            } catch (IOException e) {
-                logger.error("Failed to delete file from Cloudinary", e);
-                throw new IOException("Failed to delete file: " + e.getMessage(), e);
-            } catch (Exception e) {
-                logger.error("Unexpected error deleting file from Cloudinary", e);
-                throw new IOException("Unexpected error deleting file: " + e.getMessage(), e);
-            }
-        }
-    }
-
-    private String extractPublicIdFromUrl(String imageUrl) {
+    public boolean deleteFile(String filePath) {
         try {
-            // Extract public_id from Cloudinary URL
-            // Example: https://res.cloudinary.com/cloud_name/image/upload/v123456/iwacu250/plots/filename.jpg
-            String[] parts = imageUrl.split("/upload/");
-            if (parts.length > 1) {
-                String pathAfterUpload = parts[1];
-                // Remove version number if present
-                String[] pathParts = pathAfterUpload.split("/");
-                if (pathParts.length > 1) {
-                    // Reconstruct path without version
-                    StringBuilder publicId = new StringBuilder();
-                    for (int i = 1; i < pathParts.length; i++) {
-                        if (i > 1) publicId.append("/");
-                        publicId.append(pathParts[i]);
-                    }
-                    // Remove file extension
-                    String result = publicId.toString();
-                    int lastDot = result.lastIndexOf(".");
-                    if (lastDot > 0) {
-                        result = result.substring(0, lastDot);
-                    }
-                    return result;
-                }
-            }
-        } catch (Exception e) {
-            logger.error("Failed to extract public_id from URL: {}", imageUrl, e);
+            Path fileToDelete = Paths.get(uploadDir).resolve(filePath).normalize();
+            return Files.deleteIfExists(fileToDelete);
+        } catch (IOException ex) {
+            throw new RuntimeException("Failed to delete file: " + filePath, ex);
         }
-        return null;
+    }
+
+    private String getFileType(String contentType) {
+        if (contentType == null) {
+            return "other";
+        }
+        if (contentType.startsWith("image/")) {
+            return "image";
+        } else if (contentType.startsWith("video/")) {
+            return "video";
+        }
+        return "other";
+    }
+    
+    private Optional<String> getFileExtension(String fileName) {
+        if (fileName == null) {
+            return Optional.empty();
+        }
+        int lastDot = fileName.lastIndexOf('.');
+        if (lastDot == -1) {
+            return Optional.empty();
+        }
+        return Optional.of(fileName.substring(lastDot + 1).toLowerCase());
+    }
+    
+    @Data
+    public static class FileUploadResponse {
+        private String url;
+        private String publicId;
+        private String contentType;
+        private long fileSize;
+        private LocalDateTime uploadedAt;
+    }
+
+    private boolean isValidImage(String extension) {
+        return allowedImageExtensions.contains(extension.toLowerCase());
+    }
+
+    private boolean isValidVideo(String extension) {
+        return allowedVideoExtensions.contains(extension.toLowerCase());
+    }
+    
+    /**
+     * List all uploaded files with their URLs
+     * @return Map containing lists of image and video URLs
+     */
+    public Map<String, List<String>> listUploadedFiles() {
+        Map<String, List<String>> files = new HashMap<>();
+        
+        // List image files
+        Path imageDir = Paths.get(uploadDir, "images").toAbsolutePath().normalize();
+        files.put("images", listFilesInDirectory(imageDir));
+        
+        // List video files
+        Path videoDir = Paths.get(uploadDir, "videos").toAbsolutePath().normalize();
+        files.put("videos", listFilesInDirectory(videoDir));
+        
+        return files;
+    }
+    
+    private List<String> listFilesInDirectory(Path directory) {
+        try {
+            if (Files.notExists(directory)) {
+                Files.createDirectories(directory);
+                return new ArrayList<>();
+            }
+            
+            return Files.walk(directory, 1)
+                .filter(Files::isRegularFile)
+                .map(directory::relativize)
+                .map(Path::toString)
+                .filter(path -> !path.isEmpty())
+                .map(path -> "/uploads/" + directory.getFileName() + "/" + path)
+                .collect(Collectors.toList());
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to list files in directory: " + directory, e);
+        }
     }
 }

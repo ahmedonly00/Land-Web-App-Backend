@@ -115,6 +115,8 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<Void>> handleAllUncaughtException(
             Exception ex, WebRequest request) {
+        System.err.println("GlobalExceptionHandler: Caught uncaught exception: " + ex.getMessage());
+        ex.printStackTrace();
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(ApiResponse.error("An unexpected error occurred: " + ex.getMessage(), 

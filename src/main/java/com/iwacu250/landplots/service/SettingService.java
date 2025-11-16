@@ -25,12 +25,21 @@ public class SettingService {
 
     @Transactional(readOnly = true)
     public Map<String, String> getAllSettings() {
-        List<Setting> settings = settingRepository.findAll();
-        Map<String, String> settingsMap = new HashMap<>();
-        for (Setting setting : settings) {
-            settingsMap.put(setting.getSettingKey(), setting.getSettingValue());
+        try {
+            System.out.println("SettingService: Starting getAllSettings...");
+            List<Setting> settings = settingRepository.findAll();
+            System.out.println("SettingService: Found " + settings.size() + " settings");
+            Map<String, String> settingsMap = new HashMap<>();
+            for (Setting setting : settings) {
+                settingsMap.put(setting.getSettingKey(), setting.getSettingValue());
+            }
+            System.out.println("SettingService: Successfully created settings map with " + settingsMap.size() + " entries");
+            return settingsMap;
+        } catch (Exception e) {
+            System.err.println("SettingService: Error in getAllSettings: " + e.getMessage());
+            e.printStackTrace();
+            throw e;
         }
-        return settingsMap;
     }
 
     @Transactional(readOnly = true)

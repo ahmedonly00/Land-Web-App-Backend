@@ -7,22 +7,21 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-// BigDecimal replaced with Double
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/plots")
-@CrossOrigin(origins = "*", maxAge = 3600)
+@CrossOrigin(origins = "*")
 public class PlotController {
 
     @Autowired
     private PlotService plotService;
 
-    @GetMapping
+    @GetMapping(value = {"", "/getAllPlots"})
     public ResponseEntity<Page<PlotDTO>> getAllPlots(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "12") int size,
-            @RequestParam(defaultValue = "createdAt") String sortBy,
+            @RequestParam(defaultValue = "id") String sortBy,
             @RequestParam(defaultValue = "desc") String sortDir,
             @RequestParam(required = false) String status,
             @RequestParam(required = false) String location,
@@ -31,23 +30,34 @@ public class PlotController {
             @RequestParam(required = false) Double minSize,
             @RequestParam(required = false) Double maxSize) {
         
-        // Default to AVAILABLE status for public endpoint
-        String searchStatus = (status != null) ? status : "AVAILABLE";
-        
-        Page<PlotDTO> plots = plotService.getAllPlots(
-                page, size, sortBy, sortDir, searchStatus, 
-                location, minPrice, maxPrice, minSize, maxSize);
-        return ResponseEntity.ok(plots);
+        try {
+            // Validate sort direction
+            String direction = "desc".equalsIgnoreCase(sortDir) ? "desc" : "asc";
+            
+            // Default to AVAILABLE status for public endpoint
+            String searchStatus = (status != null) ? status : "AVAILABLE";
+            
+            Page<PlotDTO> plots = plotService.getAllPlots(
+                    page, size, sortBy, direction, searchStatus, 
+                    location, minPrice, maxPrice, minSize, maxSize);
+            return ResponseEntity.ok(plots);
+        } catch (Exception e) {
+            // Fallback to default sorting if there's an error
+            Page<PlotDTO> plots = plotService.getAllPlots(
+                    page, size, "id", "desc", "AVAILABLE", 
+                    location, minPrice, maxPrice, minSize, maxSize);
+            return ResponseEntity.ok(plots);
+        }
     }
 
-    @GetMapping("/featured")
+    @GetMapping(value = {"/featured", "/getFeaturedPlots"})
     public ResponseEntity<List<PlotDTO>> getFeaturedPlots(
             @RequestParam(defaultValue = "6") int limit) {
         List<PlotDTO> plots = plotService.getFeaturedPlots(limit);
         return ResponseEntity.ok(plots);
     }
 
-    @GetMapping("/{id}")
+    @GetMapping(value = {"/{id}", "/getPlotById/{id}"})
     public ResponseEntity<PlotDTO> getPlotById(@PathVariable Long id) {
         PlotDTO plot = plotService.getPlotById(id);
         return ResponseEntity.ok(plot);

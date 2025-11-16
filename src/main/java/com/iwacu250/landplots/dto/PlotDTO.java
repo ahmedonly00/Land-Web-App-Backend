@@ -26,8 +26,6 @@ public class PlotDTO {
     private PropertyStatus status;
     private String featuredImageUrl;
     private String videoUrl;
-    private Double latitude;
-    private Double longitude;
     private List<ImageDTO> images = new ArrayList<>();
     private Set<String> features = new HashSet<>();
     private LocalDateTime createdAt;

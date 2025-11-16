@@ -5,10 +5,15 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
 
+/**
+ * Entity for storing image references in the database.
+ * The actual image files are stored in Cloudinary or database.
+ */
 @Entity
 @Table(name = "images")
 @Data
@@ -29,20 +34,44 @@ public class Image {
     @Column(nullable = false, name = "image_url", length = 500)
     private String imageUrl;
 
+    @Column(name = "cloudinary_public_id", length = 255)
+    private String cloudinaryPublicId;
+
+    @Column(name = "content_type", length = 100)
+    private String contentType;
+
+    @Column(name = "file_size")
+    private Long fileSize;
+
     @Column(name = "display_order")
     private Integer displayOrder = 0;
 
     @Column(name = "is_featured")
     private Boolean isFeatured = false;
 
+    @CreatedDate
+    @Column(name = "uploaded_at", nullable = false, updatable = false)
+    private LocalDateTime uploadedAt;
+
+    @CreatedDate
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private LocalDateTime createdAt;
+
     @Column(name = "alt_text", length = 500)
     private String altText;
+
     
-    @Column(nullable = false, updatable = false, name = "uploaded_at")
-    private LocalDateTime uploadedAt;
+    public static Image fromCloudinaryUpload(String imageUrl, String publicId, String contentType, long fileSize) {
+        Image image = new Image();
+        image.setImageUrl(imageUrl);
+        image.setCloudinaryPublicId(publicId);
+        image.setContentType(contentType);
+        image.setFileSize(fileSize);
+        return image;
+    }
 
     @PrePersist
     protected void onCreate() {
-        uploadedAt = LocalDateTime.now();
+        createdAt = LocalDateTime.now();
     }
 }

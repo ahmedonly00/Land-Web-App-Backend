@@ -31,8 +31,6 @@ public class PlotMapper {
         dto.setStatus(plot.getStatus());
         dto.setFeaturedImageUrl(plot.getFeaturedImageUrl());
         dto.setVideoUrl(plot.getVideoUrl());
-        dto.setLatitude(plot.getLatitude());
-        dto.setLongitude(plot.getLongitude());
         dto.setCreatedAt(plot.getCreatedAt());
         dto.setUpdatedAt(plot.getUpdatedAt());
 
@@ -69,8 +67,6 @@ public class PlotMapper {
         plot.setDescription(dto.getDescription());
         plot.setStatus(dto.getStatus() != null ? PropertyStatus.valueOf(dto.getStatus()) : PropertyStatus.AVAILABLE);
         plot.setVideoUrl(dto.getVideoUrl());
-        plot.setLatitude(dto.getLatitude());
-        plot.setLongitude(dto.getLongitude());
     }
 
     public static ImageDTO toImageDto(Image image) {

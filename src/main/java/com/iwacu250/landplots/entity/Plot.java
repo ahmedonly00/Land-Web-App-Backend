@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
@@ -18,6 +19,7 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
+@ToString(exclude = {"images", "features"})
 public class Plot {
 
     @Id
@@ -55,23 +57,16 @@ public class Plot {
     @Column(name = "video_url", length = 500)
     private String videoUrl;
 
-    @Column
-    private Double latitude;
-
-    @Column
-    private Double longitude;
-
     @OneToMany(mappedBy = "plot", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Image> images = new ArrayList<>();
 
-    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @ManyToMany(fetch = FetchType.EAGER, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinTable(
         name = "plot_features",
         joinColumns = @JoinColumn(name = "plot_id"),
         inverseJoinColumns = @JoinColumn(name = "feature_id")
     )
     private Set<Feature> features = new HashSet<>();
-
 
     @Column(nullable = false, updatable = false, name = "created_at")
     private LocalDateTime createdAt;
