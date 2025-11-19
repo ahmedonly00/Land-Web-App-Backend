@@ -44,6 +44,7 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 // Public endpoints
                 .requestMatchers(
+                    "/uploads/**", 
                     "/api/auth/**",
                     "/api/v1/auth/**",
                     "/api/auth/register-admin",
@@ -51,20 +52,23 @@ public class SecurityConfig {
                     "/api/auth/refresh-token",
                     "/api/auth/password-reset-request",
                     "/api/auth/password-reset",
-                    "/api/contact/**",
+                    "/api/contact/submitInquiry",
                     "/api/houses/**",
                     "/api/plots/**",
                     "/api/features/**",
                     "/api/settings/getPublicSettings",
-                    "/uploads/**",
+                    "/api/settings/public",
                     "/error"
                 ).permitAll()
+                // Temporarily allow admin plots endpoints without auth for debugging
+                .requestMatchers("/api/admin/plots/**").permitAll()
+                // Temporarily allow admin houses endpoints without auth for debugging
+                .requestMatchers("/api/admin/houses/**").permitAll()
                 // Admin endpoints
                 .requestMatchers(
                     "/api/admin/**",
                     "/api/admin/dashboard/**",
                     "/api/admin/files/**",
-                    "/api/admin/plots/**",
                     "/api/admin/houses/**",
                     "/api/settings/getAllSettings",
                     "/api/settings/updateSettings").hasRole("ADMIN")
@@ -110,9 +114,9 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOriginPatterns(List.of("http://localhost:3000", "https://iwacu250.rw"));
-        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
-        configuration.setAllowedHeaders(List.of("*"));
+        configuration.setAllowedOrigins(List.of("http://localhost:3000"));
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD"));
+        configuration.setAllowedHeaders(List.of("Authorization", "Content-Type", "Accept"));
         configuration.setAllowCredentials(true);
         configuration.setExposedHeaders(List.of("Authorization", "Content-Type"));
         configuration.setMaxAge(3600L);

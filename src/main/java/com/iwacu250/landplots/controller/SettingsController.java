@@ -21,6 +21,12 @@ public class SettingsController {
         return ResponseEntity.ok(settings);
     }
 
+    @GetMapping(value = "/public")
+    public ResponseEntity<Map<String, String>> getPublicSettingsAlt() {
+        Map<String, String> settings = settingService.getPublicSettings();
+        return ResponseEntity.ok(settings);
+    }
+
     @GetMapping(value = "/getAllSettings")
     public ResponseEntity<Map<String, String>> getAllSettings() {
         try {

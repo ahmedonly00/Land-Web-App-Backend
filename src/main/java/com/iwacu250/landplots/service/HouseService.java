@@ -4,7 +4,11 @@ import com.iwacu250.landplots.dto.HouseDTO;
 import com.iwacu250.landplots.dto.ImageDTO;
 import com.iwacu250.landplots.entity.House;
 import com.iwacu250.landplots.entity.HouseFeature;
+import com.iwacu250.landplots.entity.HouseFeatureJoin;
 import com.iwacu250.landplots.entity.HouseImage;
+
+import java.util.HashSet;
+import java.util.Set;
 import com.iwacu250.landplots.entity.PropertyStatus;
 import com.iwacu250.landplots.entity.PropertyType;
 import com.iwacu250.landplots.exception.ResourceNotFoundException;
@@ -62,36 +66,59 @@ public class HouseService {
         return HouseMapper.toDto(savedHouse);
     }
 
+    @Transactional
     public HouseDTO updateHouse(Long id, HouseDTO houseDTO) {
         if (id == null) {
             throw new IllegalArgumentException("House ID cannot be null");
         }
         
-        House existingHouse = houseRepository.findById(id)
+        // Load the existing house with its features in a single query
+        House existingHouse = houseRepository.findByIdWithFeatures(id)
             .orElseThrow(() -> new ResourceNotFoundException("House not found with id: " + id));
         
-        // Update fields using the mapper
+        // Update basic fields using the mapper
         HouseMapper.updateEntityFromDto(houseDTO, existingHouse);
         
-        // Handle features
+        // Handle features if they are provided in the DTO
         if (houseDTO.getFeatures() != null) {
-            // First, remove all existing features
-            existingHouse.getHouseFeatures().clear();
+            // First, collect all features to remove
+            Set<HouseFeature> featuresToRemove = new HashSet<>();
+            for (HouseFeatureJoin join : existingHouse.getHouseFeatures().values()) {
+                boolean existsInNewList = houseDTO.getFeatures().stream()
+                    .anyMatch(dto -> dto.getName().equals(join.getFeature().getName()));
+                
+                if (!existsInNewList) {
+                    featuresToRemove.add(join.getFeature());
+                }
+            }
             
-            // Then add all features from DTO
-            houseDTO.getFeatures().forEach(featureDto -> {
-                HouseFeature feature = featureRepository.findByName(featureDto.getName())
-                    .orElseGet(() -> {
-                        HouseFeature newFeature = new HouseFeature();
-                        newFeature.setName(featureDto.getName());
-                        newFeature.setDescription(featureDto.getDescription());
-                        newFeature.setIcon(featureDto.getIcon());
-                        return featureRepository.save(newFeature);
-                    });
-                existingHouse.addFeature(feature);
-            });
+            // Remove features not in the new list
+            featuresToRemove.forEach(existingHouse::removeFeature);
+            
+            // Then add or update features from the DTO
+            for (HouseFeature featureDto : houseDTO.getFeatures()) {
+                boolean exists = existingHouse.getHouseFeatures().values().stream()
+                    .anyMatch(join -> join.getFeature().getName().equals(featureDto.getName()));
+                
+                if (!exists) {
+                    // Try to find an existing feature with the same name
+                    HouseFeature feature = featureRepository.findByName(featureDto.getName())
+                        .orElseGet(() -> {
+                            // Create a new feature if it doesn't exist
+                            HouseFeature newFeature = new HouseFeature();
+                            newFeature.setName(featureDto.getName());
+                            newFeature.setDescription(featureDto.getDescription());
+                            newFeature.setIcon(featureDto.getIcon());
+                            return featureRepository.save(newFeature);
+                        });
+                    
+                    // Add the feature to the house
+                    existingHouse.addFeature(feature);
+                }
+            }
         }
         
+        // Save the updated house
         House updatedHouse = houseRepository.save(existingHouse);
         return HouseMapper.toDto(updatedHouse);
     }

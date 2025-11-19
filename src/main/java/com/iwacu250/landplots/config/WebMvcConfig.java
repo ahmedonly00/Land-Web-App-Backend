@@ -15,11 +15,17 @@ public class WebMvcConfig implements WebMvcConfigurer {
 
     @Override
     public void addResourceHandlers(@NonNull ResourceHandlerRegistry registry) {
+        String uploadLocation = "file:" + uploadDir;
+        if (!uploadLocation.endsWith("/")) {
+            uploadLocation += "/";
+        }
+        
         registry
             .addResourceHandler("/uploads/**")
-            .addResourceLocations("file:" + uploadDir + "/")
+            .addResourceLocations(uploadLocation)
             .setCachePeriod(3600)
             .resourceChain(true)
             .addResolver(new PathResourceResolver());
     }
 }
+

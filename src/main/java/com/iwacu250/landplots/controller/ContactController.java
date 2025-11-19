@@ -13,7 +13,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/contacts")
+@RequestMapping("/api/contact")
 @CrossOrigin(origins = "*")
 public class ContactController {
 

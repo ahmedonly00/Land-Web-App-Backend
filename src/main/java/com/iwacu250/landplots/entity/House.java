@@ -8,8 +8,9 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 @Entity
@@ -75,7 +76,8 @@ public class House {
     private List<HouseImage> images = new ArrayList<>();
 
     @OneToMany(mappedBy = "house", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<HouseFeatureJoin> houseFeatures = new HashSet<>();
+    @MapKey(name = "id")
+    private Map<HouseFeatureJoinId, HouseFeatureJoin> houseFeatures = new HashMap<>();
     
     // Helper methods for images
     public void addImage(HouseImage image) {
@@ -94,11 +96,11 @@ public class House {
     // Helper methods for features
     public void addFeature(HouseFeature feature) {
         if (houseFeatures == null) {
-            houseFeatures = new HashSet<>();
+            houseFeatures = new HashMap<>();
         }
         
         // Check if this feature is already associated
-        boolean exists = houseFeatures.stream()
+        boolean exists = houseFeatures.values().stream()
             .anyMatch(j -> j.getFeature() != null && j.getFeature().getId() != null && 
                          j.getFeature().getId().equals(feature.getId()));
         
@@ -109,25 +111,47 @@ public class House {
             join.setName(feature.getName());
             join.setDescription(feature.getDescription());
             join.setIcon(feature.getIcon());
-            houseFeatures.add(join);
+            
+            // Create and set the ID
+            HouseFeatureJoinId id = new HouseFeatureJoinId(this.id, feature.getId());
+            join.setId(id);
+            
+            houseFeatures.put(id, join);
         }
     }
     
     public void removeFeature(HouseFeature feature) {
-        if (houseFeatures != null) {
-            houseFeatures.removeIf(j -> j.getFeature() != null && 
-                                     j.getFeature().getId() != null && 
-                                     j.getFeature().getId().equals(feature.getId()));
+        if (houseFeatures != null && feature != null && feature.getId() != null) {
+            // Find and remove the join for this feature
+            houseFeatures.entrySet().removeIf(entry -> {
+                HouseFeatureJoin join = entry.getValue();
+                if (join.getFeature() != null && join.getFeature().getId() != null && 
+                    join.getFeature().getId().equals(feature.getId())) {
+                    // Remove this join from the feature's side
+                    if (join.getFeature() != null) {
+                        join.getFeature().getHouseJoins().remove(join);
+                    }
+                    // Clear the reference to house
+                    join.setHouse(null);
+                    return true;
+                }
+                return false;
+            });
         }
     }
 
     public void addFeatureJoin(HouseFeatureJoin join) {
         if (this.houseFeatures == null) {
-            this.houseFeatures = new HashSet<>();
+            this.houseFeatures = new HashMap<>();
         }
         if (join != null) {
             join.setHouse(this);
-            this.houseFeatures.add(join);
+            // Ensure the ID is set
+            if (this.id != null && join.getFeature() != null && join.getFeature().getId() != null) {
+                HouseFeatureJoinId id = new HouseFeatureJoinId(this.id, join.getFeature().getId());
+                join.setId(id);
+                this.houseFeatures.put(id, join);
+            }
         }
     }
     
@@ -135,7 +159,7 @@ public class House {
     public Set<HouseFeature> getFeatures() {
         Set<HouseFeature> features = new HashSet<>();
         if (houseFeatures != null) {
-            for (HouseFeatureJoin join : houseFeatures) {
+            for (HouseFeatureJoin join : houseFeatures.values()) {
                 if (join.getFeature() != null) {
                     features.add(join.getFeature());
                 }
