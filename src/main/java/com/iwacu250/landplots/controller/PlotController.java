@@ -11,7 +11,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/plots")
-@CrossOrigin(origins = "*")
+@CrossOrigin(origins = {"https://iwacu250.com/", "https://www.iwacu250.com/"})
 public class PlotController {
 
     @Autowired

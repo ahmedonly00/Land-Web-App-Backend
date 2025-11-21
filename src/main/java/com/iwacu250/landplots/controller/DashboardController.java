@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/admin/dashboard")
-@CrossOrigin(origins = "*")
+@CrossOrigin(origins = {"https://iwacu250.com/", "https://www.iwacu250.com/"})
 public class DashboardController {
 
     @Autowired

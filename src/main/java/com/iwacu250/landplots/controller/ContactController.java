@@ -14,7 +14,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/contact")
-@CrossOrigin(origins = "*")
+@CrossOrigin(origins = {"https://iwacu250.com/", "https://www.iwacu250.com/"})
 public class ContactController {
 
     @Autowired

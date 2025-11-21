@@ -18,7 +18,7 @@ import java.util.HashMap;
 @RestController
 @RequestMapping("/api/files")
 @Tag(name = "File Management", description = "APIs for file uploads and management")
-@CrossOrigin(origins = "*")
+@CrossOrigin(origins = {"https://iwacu250.com/", "https://www.iwacu250.com/"})
 public class FileController {
 
     private final FileStorageService fileStorageService;

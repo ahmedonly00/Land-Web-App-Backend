@@ -10,7 +10,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/admin/files")
-@CrossOrigin(origins = "*")
+@CrossOrigin(origins = {"https://iwacu250.com/", "https://www.iwacu250.com/"})
 public class AdminFileController {
 
     private final FileStorageService fileStorageService;

@@ -28,8 +28,8 @@ import org.springframework.context.annotation.Configuration;
                     """,
                 contact = @Contact(
                         name = "Land Plots Support",
-                        email = "support@iwacu250.rw",
-                        url = "https://iwacu250.rw"
+                        email = "support@iwacu250.com",
+                        url = "https://iwacu250.com/"
                 ),
                 license = @License(
                         name = "Apache 2.0",
@@ -43,7 +43,7 @@ import org.springframework.context.annotation.Configuration;
                 ),
                 @Server(
                         description = "Production ENV",
-                        url = "https://api.iwacu250.rw"
+                        url = "https://api.iwacu250.com/"
                 )
         },
         security = {

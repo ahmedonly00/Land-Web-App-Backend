@@ -20,7 +20,7 @@ import java.util.List;
 @Slf4j
 @RestController
 @RequestMapping("/api/auth")
-@CrossOrigin(origins = "*")
+@CrossOrigin(origins = {"https://iwacu250.com", "https://www.iwacu250.com"})
 public class AuthenticationController {
 
     private final AuthenticationService authService;

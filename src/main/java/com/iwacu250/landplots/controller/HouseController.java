@@ -15,7 +15,7 @@ import java.math.BigDecimal;
 
 @RestController
 @RequestMapping("/api/houses")
-@CrossOrigin(origins = "*")
+@CrossOrigin(origins = {"https://iwacu250.com/", "https://www.iwacu250.com/"})
 public class HouseController extends BaseController {
 
     private final HouseService houseService;
