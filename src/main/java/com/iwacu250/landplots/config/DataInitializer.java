@@ -16,7 +16,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 
 @Configuration
-@Profile("!prod") // Only run this in non-production environments
+@Profile("dev")
 public class DataInitializer {
 
     @Bean
@@ -34,23 +34,33 @@ public class DataInitializer {
             Role adminRole = roleRepository.findByName(ERole.ROLE_ADMIN)
                     .orElseGet(() -> roleRepository.save(new Role(ERole.ROLE_ADMIN)));
             
-            // Check if admin user already exists
-            if (!userRepository.existsByUsername("admin")) {
+            // Check if admin user already exists by username or email
+            String adminUsername = "karim";
+            String adminEmail = "karimkanakuze2050@gmail.com";
+            
+            boolean userExists = userRepository.existsByUsername(adminUsername) || 
+                               userRepository.existsByEmail(adminEmail);
+            
+            if (!userExists) {
                 System.out.println("Creating default admin user...");
                 // Create admin user
                 User admin = new User(
-                    "karim",
-                    "karimkanakuze2050@gmail.com",
+                    adminUsername,
+                    adminEmail,
                     passwordEncoder.encode("admin123"),
                     "Admin User",
                     "+250780314239",
                     "Kigali, Rwanda"
                 );
                 admin.setRoles(new HashSet<>(Arrays.asList(adminRole)));
-                userRepository.save(admin);
-                System.out.println("Default admin user created with username: admin and password: admin123");
+                try {
+                    userRepository.save(admin);
+                    System.out.println("Default admin user created with username: " + adminUsername + " and password: admin123");
+                } catch (Exception e) {
+                    System.err.println("Error creating admin user: " + e.getMessage());
+                }
             } else {
-                System.out.println("Admin user already exists, skipping creation.");
+                System.out.println("Admin user with username 'karim' or email 'karimkanakuze2050@gmail.com' already exists, skipping creation.");
             }
             
             System.out.println("=== Admin User Initialization Complete ===\n");
