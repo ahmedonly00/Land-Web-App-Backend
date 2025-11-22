@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.lang.NonNull;
 
@@ -71,7 +72,9 @@ public class HouseFeatureService {
 
     @Transactional(readOnly = true)
     public Page<HouseFeatureDTO> getAllFeatures(Pageable pageable) {
-        return featureRepository.findAll(pageable)
+        // If pageable is null, use default pagination (first page with 10 items)
+        Pageable pageRequest = pageable != null ? pageable : PageRequest.of(0, 10);
+        return featureRepository.findAll(pageRequest)
             .map(HouseFeatureMapper::toDto);
     }
 

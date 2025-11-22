@@ -5,12 +5,11 @@ import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.security.SignatureException;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
-
+import lombok.extern.slf4j.Slf4j;
 import java.security.Key;
 import java.util.Date;
 import java.util.HashMap;
@@ -18,51 +17,34 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-/**
- * Service for handling JWT token generation, validation, and parsing.
- */
 @Service
 @Slf4j
 public class JwtService {
-    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(JwtService.class);
-
     @Value("${jwt.secret}")
     private String secretKey;
 
-    @Value("${jwt.expiration:86400000}") // 24 hours by default
+    @Value("${jwt.expiration:86400000}")
     private long jwtExpiration;
 
-    @Value("${jwt.refresh-token.expiration:604800000}") // 7 days by default
+    @Value("${jwt.refresh-token.expiration:604800000}")
     private long refreshExpiration;
     
-    @Value("${jwt.password-reset.expiration:3600000}") // 1 hour by default
+    @Value("${jwt.password-reset.expiration:3600000}")
     private long passwordResetExpiration;
 
-    /**
-     * Extracts the username from the JWT token.
-     */
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
     }
 
-    /**
-     * Extracts a specific claim from the JWT token.
-     */
     public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
         final Claims claims = extractAllClaims(token);
         return claimsResolver.apply(claims);
     }
 
-    /**
-     * Generates a JWT token for a UserDetails object.
-     */
     public String generateToken(UserDetails userDetails) {
         return generateToken(new HashMap<>(), userDetails);
     }
 
-    /**
-     * Generates a JWT token with extra claims for a UserDetails object.
-     */
     public String generateToken(
             Map<String, Object> extraClaims,
             UserDetails userDetails
@@ -70,16 +52,10 @@ public class JwtService {
         return buildToken(extraClaims, userDetails, jwtExpiration);
     }
 
-    /**
-     * Generates a refresh token for a UserDetails object.
-     */
     public String generateRefreshToken(UserDetails userDetails) {
         return buildToken(new HashMap<>(), userDetails, refreshExpiration);
     }
-
-    /**
-     * Builds a JWT token with the specified claims and expiration.
-     */
+    
     private String buildToken(
             Map<String, Object> extraClaims,
             UserDetails userDetails,
@@ -88,9 +64,6 @@ public class JwtService {
         return buildToken(extraClaims, userDetails.getUsername(), expiration);
     }
     
-    /**
-     * Builds a JWT token for a User entity.
-     */
     public String generateToken(User user) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("id", user.getId());
@@ -102,9 +75,6 @@ public class JwtService {
         return buildToken(claims, user.getUsername(), jwtExpiration);
     }
 
-    /**
-     * Internal method to build a JWT token with the specified claims, subject, and expiration.
-     */
     private String buildToken(
             Map<String, Object> extraClaims,
             String subject,
@@ -120,9 +90,6 @@ public class JwtService {
                 .compact();
     }
 
-    /**
-     * Validates if a token is valid for the given UserDetails.
-     */
     public boolean isTokenValid(String token, UserDetails userDetails) {
         final String username = extractUsername(token);
         return (username != null && 
@@ -130,9 +97,6 @@ public class JwtService {
                !isTokenExpired(token));
     }
     
-    /**
-     * Validates a token's signature and expiration.
-     */
     public boolean validateToken(String token) {
         try {
             Jwts.parser()
@@ -154,9 +118,6 @@ public class JwtService {
         return false;
     }
     
-    /**
-     * Generates a password reset token for a user.
-     */
     public String generatePasswordResetToken(User user) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("type", "reset");

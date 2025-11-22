@@ -12,6 +12,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
@@ -83,8 +84,12 @@ public class FileStorageService {
 
         try {
             // Validate file type
-            String originalFileName = StringUtils.cleanPath(file.getOriginalFilename());
-            String fileExtension = getFileExtension(originalFileName)
+            String originalFileName = file.getOriginalFilename();
+            if (originalFileName == null || originalFileName.trim().isEmpty()) {
+                throw new IllegalArgumentException("File name cannot be empty");
+            }
+            String cleanFileName = StringUtils.cleanPath(originalFileName);
+            String fileExtension = getFileExtension(cleanFileName)
                 .orElseThrow(() -> new IllegalArgumentException("File must have an extension"));
 
             if (fileType.equalsIgnoreCase("image") && !isValidImage(fileExtension)) {
@@ -159,10 +164,7 @@ public class FileStorageService {
         return allowedVideoExtensions.contains(extension.toLowerCase());
     }
     
-    /**
-     * List all uploaded files with their URLs
-     * @return Map containing lists of image and video URLs
-     */
+    
     public Map<String, List<String>> listUploadedFiles() {
         Map<String, List<String>> files = new HashMap<>();
         

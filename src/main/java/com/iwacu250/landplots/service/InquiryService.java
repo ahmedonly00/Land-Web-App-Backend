@@ -32,10 +32,11 @@ public class InquiryService {
         inquiry.setMessage(inquiryDTO.getMessage());
         inquiry.setStatus("NEW");
 
-        if (inquiryDTO.getPlotId() != null) {
+        Long plotId = inquiryDTO.getPlotId();
+        if (plotId != null) {
             // Explicitly handle the case where plot might not be found
-            Plot plot = plotRepository.findById(inquiryDTO.getPlotId())
-                .orElseThrow(() -> new ResourceNotFoundException("Plot not found with id: " + inquiryDTO.getPlotId()));
+            Plot plot = plotRepository.findById(plotId)
+                .orElseThrow(() -> new ResourceNotFoundException("Plot not found with id: " + plotId));
             inquiry.setPlot(plot);
         }
 

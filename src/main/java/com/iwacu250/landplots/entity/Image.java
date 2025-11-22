@@ -10,10 +10,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
 
-/**
- * Entity for storing image references in the database.
- * The actual image files are stored in Cloudinary or database.
- */
+
 @Entity
 @Table(name = "images")
 @Data

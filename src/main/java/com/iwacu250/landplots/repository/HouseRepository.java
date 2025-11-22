@@ -7,8 +7,12 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import com.iwacu250.landplots.entity.PropertyType;
 
 @Repository
 public interface HouseRepository extends JpaRepository<House, Long> {
@@ -27,4 +31,21 @@ public interface HouseRepository extends JpaRepository<House, Long> {
     
     // Dashboard statistics methods
     Long countByStatus(PropertyStatus status);
+    
+    @Query("SELECT DISTINCT h FROM House h " +
+           "WHERE (:location IS NULL OR LOWER(h.location) LIKE LOWER(CONCAT('%', :location, '%'))) " +
+           "AND (:minPrice IS NULL OR h.price >= :minPrice) " +
+           "AND (:maxPrice IS NULL OR h.price <= :maxPrice) " +
+           "AND (:bedrooms IS NULL OR h.bedrooms = :bedrooms) " +
+           "AND (:type IS NULL OR h.type = :type) " +
+           "AND (:status IS NULL OR h.status = :status)")
+    Page<House> searchHouses(
+            @Param("location") String location,
+            @Param("minPrice") BigDecimal minPrice,
+            @Param("maxPrice") BigDecimal maxPrice,
+            @Param("bedrooms") Integer bedrooms,
+            @Param("type") PropertyType type,
+            @Param("status") PropertyStatus status,
+            Pageable pageable
+    );
 }

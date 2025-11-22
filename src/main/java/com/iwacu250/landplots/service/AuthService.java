@@ -92,13 +92,14 @@ public class AuthService {
         );
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
-        String jwt = tokenProvider.generateToken(authentication);
+        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+        String jwt = tokenProvider.generateToken(userDetails.getUser());
 
         return new AuthResponse(
                 jwt,
-                user.getId(),
-                user.getUsername(),
-                user.getEmail(),
+                userDetails.getId(),
+                userDetails.getUsername(),
+                userDetails.getEmail(),
                 DEFAULT_ROLE.name().replace("ROLE_", "")
         );
     }
@@ -112,9 +113,9 @@ public class AuthService {
         );
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
-        String jwt = tokenProvider.generateToken(authentication);
-
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+        String jwt = tokenProvider.generateToken(userDetails.getUser());
+        
         String role = userDetails.getAuthorities().stream()
                 .findFirst()
                 .map(authority -> authority.getAuthority().replace("ROLE_", ""))

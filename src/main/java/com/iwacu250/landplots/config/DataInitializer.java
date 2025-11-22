@@ -39,11 +39,11 @@ public class DataInitializer {
                 System.out.println("Creating default admin user...");
                 // Create admin user
                 User admin = new User(
-                    "admin",
-                    "admin@example.com",
+                    "karim",
+                    "karimkanakuze2050@gmail.com",
                     passwordEncoder.encode("admin123"),
                     "Admin User",
-                    "+250788888888",
+                    "+250780314239",
                     "Kigali, Rwanda"
                 );
                 admin.setRoles(new HashSet<>(Arrays.asList(adminRole)));

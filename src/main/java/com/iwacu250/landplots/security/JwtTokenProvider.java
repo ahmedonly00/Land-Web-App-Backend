@@ -5,7 +5,6 @@ import io.jsonwebtoken.security.Keys;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 
 import com.iwacu250.landplots.entity.User;
@@ -37,7 +36,7 @@ public class JwtTokenProvider {
         
         return Jwts.builder()
                 .subject(Long.toString(user.getId()))
-                .claim("username", user.getUsername())  // ✅ Store username as claim
+                .claim("username", user.getUsername())
                 .issuedAt(now)
                 .expiration(expiryDate)
                 .signWith(getSigningKey())
@@ -90,18 +89,12 @@ public class JwtTokenProvider {
                     .parseSignedClaims(authToken);
             logger.debug("JWT token validation successful");
             return true;
-        } catch (SignatureException ex) {
-            logger.error("Invalid JWT signature: {}", ex.getMessage());
-        } catch (MalformedJwtException ex) {
-            logger.error("Invalid JWT token: {}", ex.getMessage());
-        } catch (ExpiredJwtException ex) {
-            logger.error("Expired JWT token: {}", ex.getMessage());
-        } catch (UnsupportedJwtException ex) {
-            logger.error("Unsupported JWT token: {}", ex.getMessage());
+        } catch (JwtException ex) {
+            logger.error("JWT validation failed: {}", ex.getMessage());
         } catch (IllegalArgumentException ex) {
             logger.error("JWT claims string is empty: {}", ex.getMessage());
         } catch (Exception ex) {
-            logger.error("JWT validation error: {}", ex.getMessage());
+            logger.error("Unexpected error during JWT validation: {}", ex.getMessage());
         }
         return false;
     }

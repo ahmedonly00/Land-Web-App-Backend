@@ -46,7 +46,6 @@ public class PlotService {
     @Autowired
     private FileStorageService fileStorageService;
 
-    // ModelMapper has been replaced with manual mapping in PlotMapper
 
     @Transactional(readOnly = true)
     public Page<PlotDTO> getAllPlots(int page, int size, String sortBy, String direction,
@@ -58,12 +57,10 @@ public class PlotService {
             try {
                 status = PropertyStatus.valueOf(statusParam.toUpperCase());
             } catch (IllegalArgumentException e) {
-                // If the status is invalid, treat it as null (no status filter)
                 status = null;
             }
         }
         
-        // Create sort object
         Sort sort = direction.equalsIgnoreCase("asc") 
                 ? Sort.by(sortBy).ascending() 
                 : Sort.by(sortBy).descending();
@@ -207,10 +204,11 @@ public class PlotService {
         }
         
         // Remove from any plot's featured image reference if needed
-        if (image.getPlot().getFeaturedImageUrl() != null && 
-            image.getPlot().getFeaturedImageUrl().equals(image.getImageUrl())) {
-            image.getPlot().setFeaturedImageUrl(null);
-            plotRepository.save(image.getPlot());
+        Plot plot = image.getPlot();
+        if (plot != null && plot.getFeaturedImageUrl() != null && 
+            plot.getFeaturedImageUrl().equals(image.getImageUrl())) {
+            plot.setFeaturedImageUrl(null);
+            plotRepository.save(plot);
         }
         
         // Delete the image entity

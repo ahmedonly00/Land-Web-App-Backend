@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
 
 
 @Data
-@AllArgsConstructor
+@AllArgsConstructor(onConstructor = @__(@JsonIgnore))
 public class UserDetailsImpl implements UserDetails {
     private static final long serialVersionUID = 1L;
 
@@ -28,7 +28,11 @@ public class UserDetailsImpl implements UserDetails {
     private String email;
     @JsonIgnore
     private String password;
-    private Collection<? extends GrantedAuthority> authorities;
+    
+    // Store the user object for easy access
+    @JsonIgnore
+    private final User user;
+    private final Collection<? extends GrantedAuthority> authorities;
 
     public static UserDetailsImpl build(User user) {
         if (user == null) {
@@ -48,13 +52,15 @@ public class UserDetailsImpl implements UserDetails {
                 .map(role -> new SimpleGrantedAuthority(role.name()))
                 .collect(Collectors.toList());
 
-        return new UserDetailsImpl(
+UserDetailsImpl userDetails = new UserDetailsImpl(
                 user.getId(),
                 user.getUsername(),
                 user.getEmail(),
                 user.getPasswordHash(),
+                user,
                 authorities
         );
+        return userDetails;
     }
 
     @Override
@@ -90,6 +96,10 @@ public class UserDetailsImpl implements UserDetails {
     @Override
     public boolean isEnabled() {
         return true;
+    }
+    
+    public User getUser() {
+        return user;
     }
 
     @Override

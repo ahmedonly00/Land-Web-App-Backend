@@ -60,10 +60,14 @@ public class HouseService {
         House house = HouseMapper.toEntity(houseDTO);
         System.out.println("Converted to entity: " + house);
         
-        House savedHouse = houseRepository.save(house);
-        System.out.println("Saved house: " + savedHouse);
-        
-        return HouseMapper.toDto(savedHouse);
+        try {
+            House savedHouse = houseRepository.save(house);
+            System.out.println("Saved house: " + savedHouse);
+            return HouseMapper.toDto(savedHouse);
+        } catch (Exception e) {
+            System.err.println("Error saving house: " + e.getMessage());
+            throw new RuntimeException("Failed to save house", e);
+        }
     }
 
     @Transactional
@@ -96,7 +100,7 @@ public class HouseService {
             featuresToRemove.forEach(existingHouse::removeFeature);
             
             // Then add or update features from the DTO
-            for (HouseFeature featureDto : houseDTO.getFeatures()) {
+            for (com.iwacu250.landplots.dto.HouseFeatureDTO featureDto : houseDTO.getFeatures()) {
                 boolean exists = existingHouse.getHouseFeatures().values().stream()
                     .anyMatch(join -> join.getFeature().getName().equals(featureDto.getName()));
                 
@@ -147,10 +151,24 @@ public class HouseService {
     public Page<HouseDTO> searchHouses(String location, BigDecimal minPrice, BigDecimal maxPrice, 
                                      Integer bedrooms, PropertyType type, PropertyStatus status,
                                      Pageable pageable) {
-        // For now, we'll return all houses with pagination
-        // In a real application, you would implement the filtering logic here
-        // or create a custom repository method with @Query
-        return houseRepository.findAll(pageable).map(HouseMapper::toDto);
+        // Validate price range
+        if (minPrice != null && maxPrice != null && minPrice.compareTo(maxPrice) > 0) {
+            throw new IllegalArgumentException("Minimum price cannot be greater than maximum price");
+        }
+        
+        // Convert empty string to null for location
+        String locationParam = (location != null && location.trim().isEmpty()) ? null : location;
+        
+        // Execute the search with all parameters
+        return houseRepository.searchHouses(
+            locationParam,
+            minPrice,
+            maxPrice,
+            bedrooms,
+            type,
+            status,
+            pageable
+        ).map(HouseMapper::toDto);
     }
 
     public ImageDTO uploadImage(Long houseId, MultipartFile file, Integer displayOrder, Boolean isFeatured) throws IOException {
