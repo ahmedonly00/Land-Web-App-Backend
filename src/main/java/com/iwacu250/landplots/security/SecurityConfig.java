@@ -46,6 +46,7 @@ public class SecurityConfig {
                 // Public endpoints
                 .requestMatchers(
                     "/api/uploads/**", 
+                    "/api/files/**",
                     "/api/auth/**",
                     "/api/v1/auth/**",
                     "/api/auth/register-admin",
