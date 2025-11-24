@@ -45,7 +45,9 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 // Public endpoints
                 .requestMatchers(
-                    "/api/uploads/**", 
+                    "/uploads/**", 
+                    "/api/uploads/**",
+                    "/files/**",
                     "/api/files/**",
                     "/api/auth/**",
                     "/api/v1/auth/**",
