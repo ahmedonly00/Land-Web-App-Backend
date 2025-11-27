@@ -8,6 +8,7 @@ import com.iwacu250.landplots.entity.HouseFeatureJoin;
 import com.iwacu250.landplots.entity.HouseImage;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import com.iwacu250.landplots.entity.PropertyStatus;
 import com.iwacu250.landplots.entity.PropertyType;
@@ -16,7 +17,6 @@ import com.iwacu250.landplots.mapper.HouseMapper;
 import com.iwacu250.landplots.repository.HouseFeatureRepository;
 import com.iwacu250.landplots.repository.HouseRepository;
 import com.iwacu250.landplots.repository.HouseImageRepository;
-import com.iwacu250.landplots.service.FileStorageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -203,6 +203,12 @@ public class HouseService {
             System.out.println("HouseService: Saving house image entity...");
             HouseImage savedImage = houseImageRepository.save(houseImage);
             System.out.println("HouseService: House image saved with ID: " + savedImage.getId());
+
+            if (savedImage.getIsFeatured() || house.getFeaturedImageUrl() == null || house.getFeaturedImageUrl().isEmpty()) {
+                house.setFeaturedImageUrl(savedImage.getImageUrl());
+                houseRepository.save(house);
+                System.out.println("HouseService: Updated house featured_image_url: " + savedImage.getImageUrl());
+            }
             
             // Convert to ImageDTO for response
             ImageDTO imageDTO = new ImageDTO();
@@ -237,9 +243,25 @@ public class HouseService {
         return uploadResponse.getUrl();
     }
 
+    // public void deleteImage(Long imageId) {
+    //     HouseImage houseImage = houseImageRepository.findById(imageId)
+    //             .orElseThrow(() -> new ResourceNotFoundException("HouseImage", "id", imageId));
+
+    //     // Delete file from storage
+    //     if (houseImage.getCloudinaryPublicId() != null) {
+    //         fileStorageService.deleteFile(houseImage.getCloudinaryPublicId());
+    //     }
+
+    //     // Delete image record from database
+    //     houseImageRepository.delete(houseImage);
+    // }
+
     public void deleteImage(Long imageId) {
         HouseImage houseImage = houseImageRepository.findById(imageId)
                 .orElseThrow(() -> new ResourceNotFoundException("HouseImage", "id", imageId));
+
+        House house = houseImage.getHouse();
+        String deletedImageUrl = houseImage.getImageUrl();
 
         // Delete file from storage
         if (houseImage.getCloudinaryPublicId() != null) {
@@ -248,6 +270,18 @@ public class HouseService {
 
         // Delete image record from database
         houseImageRepository.delete(houseImage);
+
+        if (deletedImageUrl.equals(house.getFeaturedImageUrl())) {
+            // Find another image for this house
+            List<HouseImage> remainingImages = houseImageRepository.findByHouseIdOrderByDisplayOrder(house.getId());
+            if (!remainingImages.isEmpty()) {
+                house.setFeaturedImageUrl(remainingImages.get(0).getImageUrl());
+            } else {
+                house.setFeaturedImageUrl(null);
+            }
+            houseRepository.save(house);
+            System.out.println("HouseService: Updated featured image after deletion");
+        }
     }
 
     public HouseDTO updateHouseStatus(Long id, String status) {
