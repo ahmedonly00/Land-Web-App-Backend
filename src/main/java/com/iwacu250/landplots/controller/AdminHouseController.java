@@ -17,7 +17,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import jakarta.validation.Valid;
 import java.io.IOException;
-import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -78,8 +77,8 @@ public class AdminHouseController extends BaseController {
     public ResponseEntity<Page<HouseDTO>> getAllHouses(
             @PageableDefault(size = 10) Pageable pageable,
             @RequestParam(required = false) String location,
-            @RequestParam(required = false) BigDecimal minPrice,
-            @RequestParam(required = false) BigDecimal maxPrice,
+            @RequestParam(required = false) Double minPrice,
+            @RequestParam(required = false) Double maxPrice,
             @RequestParam(required = false) Integer bedrooms,
             @RequestParam(required = false) PropertyType type,
             @RequestParam(required = false) PropertyStatus status) {
@@ -103,8 +102,8 @@ public class AdminHouseController extends BaseController {
     @GetMapping(value = "/searchHouses")
     public ResponseEntity<Page<HouseDTO>> searchHouses(
             @RequestParam(required = false) String location,
-            @RequestParam(required = false) BigDecimal minPrice,
-            @RequestParam(required = false) BigDecimal maxPrice,
+            @RequestParam(required = false) Double minPrice,
+            @RequestParam(required = false) Double maxPrice,
             @RequestParam(required = false) Integer bedrooms,
             @RequestParam(required = false) PropertyType type,
             @RequestParam(required = false) PropertyStatus status,

@@ -70,16 +70,40 @@ public class EnvironmentConfig {
     }
     
     private Dotenv loadEnvironment() {
-        logger.info("Loading .env file from: {}", System.getProperty("user.dir"));
         try {
-            return Dotenv.configure()
-                .filename(".env")
-                .ignoreIfMissing()
-                .load();
+            // Try to load from project root
+            Dotenv dotenv = Dotenv.configure()
+                    .directory(".")
+                    .ignoreIfMissing()
+                    .load();
+            
+            logger.info("Successfully loaded .env file from: " + new java.io.File(".env").getAbsolutePath());
+            return dotenv;
+            
         } catch (Exception e) {
-            logger.error("Failed to load .env file", e);
-            throw new IllegalStateException("Failed to load environment variables", e);
+            logger.error("Error loading .env file: " + e.getMessage());
+            
+            // Try to load from resources as fallback
+            try {
+                Dotenv dotenv = Dotenv.configure()
+                        .directory("src/main/resources/")
+                        .ignoreIfMissing()
+                        .load();
+                logger.info("Successfully loaded .env file from resources");
+                return dotenv;
+            } catch (Exception ex) {
+                logger.error("Failed to load .env file from resources: " + ex.getMessage());
+                
+                // As a last resort, try loading from classpath
+                try {
+                    Dotenv dotenv = Dotenv.load();
+                    logger.info("Successfully loaded .env file from classpath");
+                    return dotenv;
+                } catch (Exception exc) {
+                    logger.error("Failed to load .env file from classpath: " + exc.getMessage());
+                    throw new RuntimeException("Failed to load .env file from any location", exc);
+                }
+            }
         }
     }
-    
 }

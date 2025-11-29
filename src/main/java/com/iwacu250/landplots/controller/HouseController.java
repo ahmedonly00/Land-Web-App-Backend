@@ -11,7 +11,6 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.math.BigDecimal;
 
 @RestController
 @RequestMapping("/api/houses")
@@ -49,8 +48,8 @@ public class HouseController extends BaseController {
     public ResponseEntity<Page<HouseDTO>> getAllHouses(
             @PageableDefault(size = 10) Pageable pageable,
             @RequestParam(required = false) String location,
-            @RequestParam(required = false) BigDecimal minPrice,
-            @RequestParam(required = false) BigDecimal maxPrice,
+            @RequestParam(required = false) Double minPrice,
+            @RequestParam(required = false) Double maxPrice,
             @RequestParam(required = false) Integer bedrooms,
             @RequestParam(required = false) PropertyType type,
             @RequestParam(required = false) PropertyStatus status) {
@@ -74,8 +73,8 @@ public class HouseController extends BaseController {
     @GetMapping(value = "/searchHouses")
     public ResponseEntity<Page<HouseDTO>> searchHouses(
             @RequestParam(required = false) String location,
-            @RequestParam(required = false) BigDecimal minPrice,
-            @RequestParam(required = false) BigDecimal maxPrice,
+            @RequestParam(required = false) Double minPrice,
+            @RequestParam(required = false) Double maxPrice,
             @RequestParam(required = false) Integer bedrooms,
             @RequestParam(required = false) PropertyType type,
             @RequestParam(required = false) PropertyStatus status,

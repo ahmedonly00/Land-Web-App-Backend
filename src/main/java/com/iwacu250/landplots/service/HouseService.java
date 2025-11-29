@@ -148,11 +148,11 @@ public class HouseService {
     }
 
     @Transactional(readOnly = true)
-    public Page<HouseDTO> searchHouses(String location, BigDecimal minPrice, BigDecimal maxPrice, 
+    public Page<HouseDTO> searchHouses(String location, Double minPrice, Double maxPrice, 
                                      Integer bedrooms, PropertyType type, PropertyStatus status,
                                      Pageable pageable) {
         // Validate price range
-        if (minPrice != null && maxPrice != null && minPrice.compareTo(maxPrice) > 0) {
+        if (minPrice != null && maxPrice != null && minPrice > maxPrice) {
             throw new IllegalArgumentException("Minimum price cannot be greater than maximum price");
         }
         

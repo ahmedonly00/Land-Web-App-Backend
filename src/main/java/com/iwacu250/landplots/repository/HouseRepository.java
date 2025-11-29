@@ -7,7 +7,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.domain.Page;
@@ -41,8 +40,8 @@ public interface HouseRepository extends JpaRepository<House, Long> {
            "AND (:status IS NULL OR h.status = :status)")
     Page<House> searchHouses(
             @Param("location") String location,
-            @Param("minPrice") BigDecimal minPrice,
-            @Param("maxPrice") BigDecimal maxPrice,
+            @Param("minPrice") Double minPrice,
+            @Param("maxPrice") Double maxPrice,
             @Param("bedrooms") Integer bedrooms,
             @Param("type") PropertyType type,
             @Param("status") PropertyStatus status,
